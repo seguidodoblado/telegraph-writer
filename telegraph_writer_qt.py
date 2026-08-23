@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import json
+import mimetypes
 import os
 import re
 import sys
 import webbrowser
+import uuid
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -19,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 APP_NAME = "Telegraph Writer"
+APP_VERSION = "2.1.0"
 API_URL = "https://api.telegra.ph"
 CONFIG_DIR = Path.home() / ".config" / "telegraph-writer"
 CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -51,12 +54,36 @@ def telegraph_api(method, params=None, path=None):
     data = urlencode(params).encode("utf-8")
     request = Request(url, data=data, method="POST")
     request.add_header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-    request.add_header("User-Agent", "Telegraph-Writer/2.0")
+    request.add_header("User-Agent", f"Telegraph-Writer/{APP_VERSION}")
     with urlopen(request, timeout=30) as response:
         result = json.loads(response.read().decode("utf-8"))
     if not result.get("ok"):
         raise RuntimeError(result.get("error", "Error desconocido de Telegra.ph"))
     return result["result"]
+
+
+def upload_image(filename):
+    """Sube una imagen al endpoint público de Telegra.ph."""
+    file_path = Path(filename)
+    content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+    boundary = f"----TelegraphWriter{uuid.uuid4().hex}"
+    file_data = file_path.read_bytes()
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
+        f"Content-Type: {content_type}\r\n\r\n"
+    ).encode("utf-8") + file_data + f"\r\n--{boundary}--\r\n".encode("ascii")
+    request = Request(f"{API_URL}/upload", data=body, method="POST")
+    request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+    request.add_header("User-Agent", f"Telegraph-Writer/{APP_VERSION}")
+    with urlopen(request, timeout=60) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    if not result.get("ok"):
+        raise RuntimeError(result.get("error", "No se pudo subir la imagen"))
+    uploaded = result.get("result", [])
+    if not uploaded or not uploaded[0].get("src"):
+        raise RuntimeError("Telegra.ph no devolvió la URL de la imagen")
+    return uploaded[0]["src"]
 
 
 def inline_to_nodes(text):
@@ -220,6 +247,19 @@ class ApiWorker(QThread):
             self.failure.emit(str(error))
 
 
+class ImageUploadWorker(QThread):
+    success = Signal(str)
+    failure = Signal(str)
+    def __init__(self, filename):
+        super().__init__()
+        self.filename = filename
+    def run(self):
+        try:
+            self.success.emit(upload_image(self.filename))
+        except Exception as error:
+            self.failure.emit(str(error))
+
+
 class SettingsDialog(QDialog):
     def __init__(self, parent, token):
         super().__init__(parent)
@@ -240,6 +280,7 @@ class SettingsDialog(QDialog):
         layout.addLayout(form)
         layout.addWidget(self.test_button)
         layout.addWidget(self.status)
+        layout.addWidget(QLabel(f"Versión {APP_VERSION}"))
         layout.addWidget(buttons)
     def check_connection(self):
         token = self.token_entry.text().strip()
@@ -300,6 +341,7 @@ class TelegraphWriter(QMainWindow):
         self.new_action = QAction("Nuevo", self); self.new_action.setShortcut(QKeySequence.New); self.new_action.triggered.connect(self.new_article)
         self.open_action = QAction("Abrir", self); self.open_action.setShortcut(QKeySequence.Open); self.open_action.triggered.connect(self.open_file)
         self.save_action = QAction("Guardar", self); self.save_action.setShortcut(QKeySequence.Save); self.save_action.triggered.connect(self.save_file)
+        self.image_action = QAction("Insertar imagen", self); self.image_action.triggered.connect(self.insert_image)
         self.publish_action = QAction("Publicar", self); self.publish_action.setShortcut("Ctrl+P"); self.publish_action.triggered.connect(self.publish)
         self.update_action = QAction("Actualizar", self); self.update_action.triggered.connect(self.update_article)
         self.preview_action = QAction("Vista previa", self); self.preview_action.triggered.connect(self.preview)
@@ -316,6 +358,7 @@ class TelegraphWriter(QMainWindow):
         toolbar.addAction(self.new_action)
         toolbar.addAction(self.open_action)
         toolbar.addAction(self.save_action)
+        toolbar.addAction(self.image_action)
         toolbar.addSeparator()
         toolbar.addAction(self.settings_action)
         spacer = QWidget()
@@ -333,6 +376,7 @@ class TelegraphWriter(QMainWindow):
     def create_menu(self):
         file_menu = self.menuBar().addMenu("Archivo")
         file_menu.addAction(self.new_action); file_menu.addAction(self.open_action); file_menu.addAction(self.save_action)
+        file_menu.addAction(self.image_action)
         file_menu.addSeparator(); file_menu.addAction("Salir", self.close)
         telegraph_menu = self.menuBar().addMenu("Telegra.ph")
         telegraph_menu.addAction(self.publish_action); telegraph_menu.addAction(self.update_action); telegraph_menu.addAction(self.refresh_action)
@@ -505,6 +549,25 @@ class TelegraphWriter(QMainWindow):
         self.current_file.with_suffix(".telegraph.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
         self.dirty = False; self.document_status.setText("Guardado"); self.status.showMessage("Guardado localmente"); return True
 
+    def insert_image(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            self,
+            "Seleccionar imagen",
+            str(Path.home()),
+            "Imágenes (*.png *.jpg *.jpeg *.gif *.webp);;Todos los archivos (*)"
+        )
+        if not filename:
+            return
+        self.status.showMessage("Subiendo imagen…")
+        self.image_worker = ImageUploadWorker(filename)
+        self.image_worker.success.connect(self.image_uploaded)
+        self.image_worker.failure.connect(self.api_error)
+        self.image_worker.start()
+
+    def image_uploaded(self, url):
+        self.editor.insertPlainText(f"![]({url})")
+        self.status.showMessage("Imagen subida correctamente")
+
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Abrir Markdown", str(DRAFT_DIR), "Markdown (*.md);;Todos los archivos (*)")
         if not filename: return
@@ -589,7 +652,7 @@ class TelegraphWriter(QMainWindow):
         else: event.ignore()
 
     def about(self):
-        QMessageBox.about(self, APP_NAME, "<h2>Telegraph Writer</h2><p>Cliente de escritorio para Telegra.ph.</p><p>Versión 2.0 · Qt / PySide6</p>")
+        QMessageBox.about(self, APP_NAME, f"<h2>Telegraph Writer</h2><p>Cliente de escritorio para Telegra.ph.</p><p>Versión {APP_VERSION} · Qt / PySide6</p>")
 
 
 def html_escape(text):

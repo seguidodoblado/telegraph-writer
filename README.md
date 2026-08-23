@@ -8,6 +8,7 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 - Editar y actualizar artículos ya publicados.
 - Consultar y abrir los artículos de una cuenta.
 - Escribir usando Markdown y revisar el resultado en el navegador.
+- Subir imágenes locales e insertarlas automáticamente en el artículo.
 - Guardar borradores localmente en archivos Markdown.
 - Elegir entre modo claro y modo oscuro.
 - Atajos de teclado para las operaciones habituales.
@@ -68,6 +69,7 @@ El token se almacena localmente en `~/.config/telegraph-writer/config.json` y no
 - Usa **Actualizar** para aplicar cambios a un artículo ya publicado.
 - Si se intenta publicar un artículo ya existente, la aplicación lo bloquea para evitar crear un duplicado.
 - **Vista previa** abre una representación del artículo en el navegador.
+- **Insertar imagen** sube una imagen compatible a Telegra.ph y añade su referencia Markdown en el editor.
 
 ## Seguridad
 
