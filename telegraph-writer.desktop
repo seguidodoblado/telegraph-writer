@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Telegraph Writer
+Comment=Cliente de escritorio para Telegra.ph
+Exec=/bin/bash -lc 'cd "$HOME/Escritorio" && source "$HOME/.venvs/telegraph-writer/bin/activate" && exec python telegraph_writer_qt.py'
+Icon=telegraph-writer
+Terminal=false
+Categories=Office;TextEditor;Utility;
+StartupNotify=true
