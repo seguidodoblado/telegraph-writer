@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.swp
+*.swo
+.vscode/
+.idea/
+.venv/
+venv/
+.env
+config.json
+*.telegraph.json
