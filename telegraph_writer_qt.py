@@ -272,10 +272,10 @@ class ImageUploadWorker(QThread):
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent, token):
+    def __init__(self, parent, token, draft_dir):
         super().__init__(parent)
         self.setWindowTitle("Ajustes — Telegraph Writer")
-        self.resize(560, 230)
+        self.resize(600, 280)
         self.token_entry = QLineEdit()
         self.token_entry.setText(token)
         self.token_entry.setEchoMode(QLineEdit.Password)
@@ -284,6 +284,13 @@ class SettingsDialog(QDialog):
         self.status = QLabel("")
         form = QFormLayout()
         form.addRow("Access token:", self.token_entry)
+        self.draft_dir_entry = QLineEdit(draft_dir)
+        self.draft_dir_button = QPushButton("Elegir…")
+        self.draft_dir_button.clicked.connect(self.choose_draft_dir)
+        draft_dir_layout = QHBoxLayout()
+        draft_dir_layout.addWidget(self.draft_dir_entry)
+        draft_dir_layout.addWidget(self.draft_dir_button)
+        form.addRow("Borradores:", draft_dir_layout)
         buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
@@ -312,6 +319,12 @@ class SettingsDialog(QDialog):
         self.status.setText("✗ " + error)
     def token(self):
         return self.token_entry.text().strip()
+    def choose_draft_dir(self):
+        directory = QFileDialog.getExistingDirectory(self, "Elegir carpeta de borradores", self.draft_dir_entry.text())
+        if directory:
+            self.draft_dir_entry.setText(directory)
+    def draft_dir(self):
+        return self.draft_dir_entry.text().strip()
 
 
 class TelegraphWriter(QMainWindow):
@@ -320,6 +333,7 @@ class TelegraphWriter(QMainWindow):
         self.config = load_config()
         self.token = self.config.get("access_token", "")
         self.dark_mode = self.config.get("dark_mode", True)
+        self.draft_dir = Path(self.config.get("draft_dir", str(DRAFT_DIR))).expanduser()
         self.pages = []
         self.filtered_pages = []
         self.current_path = None
@@ -556,11 +570,11 @@ class TelegraphWriter(QMainWindow):
 
     def save_file(self):
         if not self.current_file:
-            DRAFT_DIR.mkdir(parents=True, exist_ok=True)
-            filename, _ = QFileDialog.getSaveFileName(self, "Guardar Markdown", str(DRAFT_DIR / "articulo.md"), "Markdown (*.md);;Todos los archivos (*)")
+            self.draft_dir.mkdir(parents=True, exist_ok=True)
+            filename, _ = QFileDialog.getSaveFileName(self, "Guardar Markdown", str(self.draft_dir / "articulo.md"), "Markdown (*.md);;Todos los archivos (*)")
             if not filename: return False
             self.current_file = Path(filename)
-        DRAFT_DIR.mkdir(parents=True, exist_ok=True)
+        self.draft_dir.mkdir(parents=True, exist_ok=True)
         self.current_file.write_text(self.editor.toPlainText(), encoding="utf-8")
         metadata = {"title": self.title_edit.text(), "path": self.current_path, "url": self.current_url}
         self.current_file.with_suffix(".telegraph.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -586,7 +600,7 @@ class TelegraphWriter(QMainWindow):
         self.status.showMessage("Imagen subida correctamente")
 
     def open_file(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Abrir Markdown", str(DRAFT_DIR), "Markdown (*.md);;Todos los archivos (*)")
+        filename, _ = QFileDialog.getOpenFileName(self, "Abrir Markdown", str(self.draft_dir), "Markdown (*.md);;Todos los archivos (*)")
         if not filename: return
         path = Path(filename); self.current_file = path; self.editor.setPlainText(path.read_text(encoding="utf-8"))
         metadata_file = path.with_suffix(".telegraph.json")
@@ -644,11 +658,17 @@ class TelegraphWriter(QMainWindow):
         filename = Path("/tmp") / "telegraph_writer_preview.html"; filename.write_text(html, encoding="utf-8"); webbrowser.open(filename.as_uri())
 
     def settings(self):
-        dialog = SettingsDialog(self, self.token)
+        dialog = SettingsDialog(self, self.token, str(self.draft_dir))
         if dialog.exec() == QDialog.Accepted:
             token = dialog.token()
+            draft_dir = dialog.draft_dir()
+            if draft_dir:
+                self.draft_dir = Path(draft_dir).expanduser()
+                self.config["draft_dir"] = str(self.draft_dir)
             if token:
                 self.token = token; self.config["access_token"] = token; save_config(self.config); self.load_pages()
+            else:
+                save_config(self.config)
 
     def open_current_url(self):
         if self.current_url: webbrowser.open(self.current_url)
