@@ -1,53 +1,87 @@
 # Telegraph Writer
 
-Cliente de escritorio para [Telegra.ph](https://telegra.ph/), pensado para Linux Mint y otros escritorios Linux.
+Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.ph](https://telegra.ph/). Incluye un editor Markdown sencillo, gestión de borradores locales y una interfaz gráfica basada en Qt.
 
 ## Características
 
-- Publicar artículos en Telegra.ph.
+- Crear y publicar artículos nuevos en Telegra.ph.
 - Editar y actualizar artículos ya publicados.
-- Cargar la lista de artículos de la cuenta.
-- Editor Markdown sencillo.
-- Vista previa en el navegador.
-- Guardado local de borradores en Markdown.
-- Modo oscuro y claro.
-- Fuente Ubuntu Sans.
-- Access token guardado en `~/.config/telegraph-writer/config.json` con permisos 600.
+- Consultar y abrir los artículos de una cuenta.
+- Escribir usando Markdown y revisar el resultado en el navegador.
+- Guardar borradores localmente en archivos Markdown.
+- Elegir entre modo claro y modo oscuro.
+- Atajos de teclado para las operaciones habituales.
 
 ## Requisitos
 
-- Python 3.10 o posterior recomendado.
-- PySide6.
-- Una cuenta de Telegra.ph con access token.
+- Linux con Python 3.10 o posterior.
+- `python3-venv` para crear el entorno virtual.
+- Una cuenta de Telegra.ph y su access token.
 
-## Instalación en Linux Mint
+La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se instala automáticamente durante la instalación.
+
+## Instalación recomendada
+
+El instalador prepara la aplicación, crea un entorno virtual e instala un lanzador de escritorio:
 
 ```bash
-python3 -m venv ~/.venvs/telegraph-writer
-source ~/.venvs/telegraph-writer/bin/activate
-pip install -r requirements.txt
+git clone https://github.com/seguidodoblado/telegraph-writer.git
+cd telegraph-writer
+./install.sh
 ```
 
-Después ejecuta:
+El instalador puede solicitar la contraseña de `sudo` para instalar la aplicación en `/opt/telegraph-writer`. Debe ejecutarse con un usuario normal, no como `root`.
+
+Después de la instalación, abre **Telegraph Writer** desde el menú de aplicaciones. También puedes ejecutarlo directamente:
 
 ```bash
+/home/USUARIO/.venvs/telegraph-writer/bin/python \
+  /opt/telegraph-writer/telegraph_writer_qt.py
+```
+
+Sustituye `USUARIO` por el nombre de tu usuario del sistema.
+
+## Instalación manual
+
+Si prefieres no utilizar el instalador:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 python telegraph_writer_qt.py
 ```
 
 ## Configuración
 
-La primera vez, abre **Ajustes** e introduce tu access token de Telegra.ph. El token se guarda localmente y no forma parte del repositorio.
+1. Abre **Ajustes**.
+2. Introduce el access token de tu cuenta de Telegra.ph.
+3. Guarda la configuración.
 
-## Lanzador de escritorio
+El token se almacena localmente en `~/.config/telegraph-writer/config.json` y no se incluye en los artículos guardados ni en el repositorio.
 
-El proyecto incluye `telegraph-writer.desktop`, preparado para la instalación que hemos utilizado en Linux Mint (`~/Escritorio` y `~/.venvs/telegraph-writer`). Si clonas el proyecto en otra ubicación, adapta la línea `Exec` del lanzador.
+## Flujo de trabajo
 
-El icono está en `telegraph-writer.svg`.
+- Usa **Nuevo** para empezar un artículo.
+- Usa **Guardar** para conservar una copia local en Markdown.
+- Usa **Publicar** cuando el artículo todavía no exista en Telegra.ph.
+- Usa **Actualizar** para aplicar cambios a un artículo ya publicado.
+- Si se intenta publicar un artículo ya existente, la aplicación lo bloquea para evitar crear un duplicado.
+- **Vista previa** abre una representación del artículo en el navegador.
 
 ## Seguridad
 
-**No subas nunca `~/.config/telegraph-writer/config.json` al repositorio.** El access token da acceso de edición a tus artículos de Telegra.ph.
+El access token permite modificar los artículos de la cuenta. No lo compartas ni subas `~/.config/telegraph-writer/config.json` a un repositorio.
+
+## Actualización
+
+Si instalaste la aplicación con `install.sh`, vuelve a ejecutar el instalador desde una copia actualizada del repositorio. Para actualizar manualmente:
+
+```bash
+cd /opt/telegraph-writer
+sudo git pull --ff-only
+```
 
 ## Licencia
 
-Consulta `LICENSE`, incluida en este repositorio.
+Consulta el archivo [`LICENSE`](LICENSE) incluido en el repositorio.
