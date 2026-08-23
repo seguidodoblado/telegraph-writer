@@ -2,6 +2,8 @@
 
 Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.ph](https://telegra.ph/). Incluye un editor Markdown sencillo, gestión de borradores locales y una interfaz gráfica basada en Qt.
 
+![Telegraph Writer](docs/screenshot.png)
+
 ## Características
 
 - Crear y publicar artículos nuevos en Telegra.ph.
