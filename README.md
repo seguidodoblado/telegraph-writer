@@ -62,9 +62,10 @@ El código fuente está disponible en [GitHub](https://github.com/seguidodoblado
 
 1. Abre **Ajustes**.
 2. Introduce el access token de tu cuenta de Telegra.ph.
-3. Guarda la configuración.
+3. Si quieres, elige una carpeta personalizada para los borradores locales. La ubicación predeterminada es `~/Telegra.ph`.
+4. Guarda la configuración.
 
-El token se almacena localmente en `~/.config/telegraph-writer/config.json` y no se incluye en los artículos guardados ni en el repositorio.
+El access token y la carpeta de borradores se almacenan localmente en `~/.config/telegraph-writer/config.json`. Este archivo no se incluye en los artículos guardados ni en el repositorio.
 
 ## Imágenes y alojamiento externo
 
