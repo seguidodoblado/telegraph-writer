@@ -669,7 +669,16 @@ class TelegraphWriter(QMainWindow):
         else: event.ignore()
 
     def about(self):
-        QMessageBox.about(self, APP_NAME, f"<h2>Telegraph Writer</h2><p>Cliente de escritorio para Telegra.ph.</p><p>Versión {APP_VERSION} · Qt / PySide6</p>")
+        QMessageBox.about(
+            self,
+            APP_NAME,
+            f"<h2>Telegraph Writer</h2>"
+            f"<p>Cliente de escritorio para Telegra.ph.</p>"
+            f"<p>Versión {APP_VERSION} · Qt / PySide6</p>"
+            f"<p>Desarrollado por <b>seguidodoblado</b><br>"
+            f"<a href=\"mailto:jose.antonio.seguido@gmail.com\">"
+            f"jose.antonio.seguido@gmail.com</a></p>"
+        )
 
 
 def html_escape(text):
