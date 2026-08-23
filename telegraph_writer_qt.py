@@ -80,7 +80,7 @@ def upload_image(filename):
         'Content-Disposition: form-data; name="reqtype"\r\n\r\n'
         "fileupload\r\n"
         f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
+        f'Content-Disposition: form-data; name="fileToUpload"; filename="{file_path.name}"\r\n'
         f"Content-Type: {content_type}\r\n\r\n"
     ).encode("utf-8") + file_data + f"\r\n--{boundary}--\r\n".encode("ascii")
     request = Request(IMAGE_UPLOAD_URL, data=body, method="POST")
