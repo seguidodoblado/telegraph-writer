@@ -8,7 +8,7 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 - Editar y actualizar artículos ya publicados.
 - Consultar y abrir los artículos de una cuenta.
 - Escribir usando Markdown y revisar el resultado en el navegador.
-- Subir imágenes locales e insertarlas automáticamente en el artículo.
+- Subir imágenes locales a Catbox e insertarlas automáticamente en el artículo.
 - Guardar borradores localmente en archivos Markdown.
 - Elegir entre modo claro y modo oscuro.
 - Atajos de teclado para las operaciones habituales.
@@ -61,6 +61,12 @@ python telegraph_writer_qt.py
 
 El token se almacena localmente en `~/.config/telegraph-writer/config.json` y no se incluye en los artículos guardados ni en el repositorio.
 
+## Imágenes y alojamiento externo
+
+Las nuevas subidas de imágenes de Telegra.ph están actualmente deshabilitadas por el propio servicio. Por ese motivo, **Insertar imagen** utiliza [Catbox](https://catbox.moe/) como servicio alternativo de alojamiento.
+
+La aplicación sube la imagen a Catbox, recibe una URL pública y la inserta en el artículo mediante Markdown. Esto permite que la imagen aparezca tanto en la publicación como en **Vista previa**, pero implica depender de la disponibilidad y de las condiciones de uso de Catbox. Las imágenes se almacenan externamente y no forman parte del borrador Markdown local.
+
 ## Flujo de trabajo
 
 - Usa **Nuevo** para empezar un artículo.
@@ -69,7 +75,7 @@ El token se almacena localmente en `~/.config/telegraph-writer/config.json` y no
 - Usa **Actualizar** para aplicar cambios a un artículo ya publicado.
 - Si se intenta publicar un artículo ya existente, la aplicación lo bloquea para evitar crear un duplicado.
 - **Vista previa** abre una representación del artículo en el navegador.
-- **Insertar imagen** sube una imagen compatible a Telegra.ph y añade su referencia Markdown en el editor.
+- **Insertar imagen** sube una imagen compatible a Catbox y añade su referencia Markdown en el editor.
 
 ## Seguridad
 

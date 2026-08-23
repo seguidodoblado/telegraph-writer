@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
 APP_NAME = "Telegraph Writer"
 APP_VERSION = "2.1.0"
 API_URL = "https://api.telegra.ph"
-UPLOAD_URL = "https://telegra.ph/upload"
+IMAGE_UPLOAD_URL = "https://catbox.moe/user/api.php"
 CONFIG_DIR = Path.home() / ".config" / "telegraph-writer"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DRAFT_DIR = Path.home() / "Telegra.ph"
@@ -65,36 +65,36 @@ def telegraph_api(method, params=None, path=None):
 
 
 def upload_image(filename):
-    """Sube una imagen al endpoint público de Telegra.ph."""
+    """Sube una imagen a Catbox y devuelve su URL pública."""
     file_path = Path(filename)
     allowed_types = {".jpg", ".jpeg", ".png", ".gif"}
     if file_path.suffix.lower() not in allowed_types:
-        raise RuntimeError("Telegra.ph solo admite imágenes JPG, JPEG, PNG o GIF.")
-    if file_path.stat().st_size > 5 * 1024 * 1024:
-        raise RuntimeError("La imagen supera el límite de 5 MB de Telegra.ph.")
+        raise RuntimeError("Solo se admiten imágenes JPG, JPEG, PNG o GIF.")
+    if file_path.stat().st_size > 200 * 1024 * 1024:
+        raise RuntimeError("La imagen supera el límite de 200 MB de Catbox.")
     content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
     boundary = f"----TelegraphWriter{uuid.uuid4().hex}"
     file_data = file_path.read_bytes()
     body = (
         f"--{boundary}\r\n"
+        'Content-Disposition: form-data; name="reqtype"\r\n\r\n'
+        "fileupload\r\n"
+        f"--{boundary}\r\n"
         f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
         f"Content-Type: {content_type}\r\n\r\n"
     ).encode("utf-8") + file_data + f"\r\n--{boundary}--\r\n".encode("ascii")
-    request = Request(UPLOAD_URL, data=body, method="POST")
+    request = Request(IMAGE_UPLOAD_URL, data=body, method="POST")
     request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
     request.add_header("User-Agent", f"Telegraph-Writer/{APP_VERSION}")
     try:
         with urlopen(request, timeout=60) as response:
-            result = json.loads(response.read().decode("utf-8"))
+            result = response.read().decode("utf-8").strip()
     except HTTPError as error:
         detail = error.read().decode("utf-8", errors="replace").strip()
-        raise RuntimeError(f"Telegra.ph rechazó la imagen ({error.code}). {detail}") from error
-    if not result.get("ok"):
-        raise RuntimeError(result.get("error", "No se pudo subir la imagen"))
-    uploaded = result.get("result", [])
-    if not uploaded or not uploaded[0].get("src"):
-        raise RuntimeError("Telegra.ph no devolvió la URL de la imagen")
-    return uploaded[0]["src"]
+        raise RuntimeError(f"Catbox rechazó la imagen ({error.code}). {detail}") from error
+    if not result.startswith(("http://", "https://")):
+        raise RuntimeError(f"Catbox rechazó la imagen: {result or 'respuesta vacía'}")
+    return result
 
 
 def inline_to_nodes(text):
