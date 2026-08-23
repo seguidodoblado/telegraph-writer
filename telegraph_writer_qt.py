@@ -9,6 +9,7 @@ import webbrowser
 import uuid
 from pathlib import Path
 from urllib.parse import urlencode
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from PySide6.QtCore import Qt, QThread, Signal, QSize
@@ -66,6 +67,11 @@ def telegraph_api(method, params=None, path=None):
 def upload_image(filename):
     """Sube una imagen al endpoint público de Telegra.ph."""
     file_path = Path(filename)
+    allowed_types = {".jpg", ".jpeg", ".png", ".gif"}
+    if file_path.suffix.lower() not in allowed_types:
+        raise RuntimeError("Telegra.ph solo admite imágenes JPG, JPEG, PNG o GIF.")
+    if file_path.stat().st_size > 5 * 1024 * 1024:
+        raise RuntimeError("La imagen supera el límite de 5 MB de Telegra.ph.")
     content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
     boundary = f"----TelegraphWriter{uuid.uuid4().hex}"
     file_data = file_path.read_bytes()
@@ -77,8 +83,12 @@ def upload_image(filename):
     request = Request(UPLOAD_URL, data=body, method="POST")
     request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
     request.add_header("User-Agent", f"Telegraph-Writer/{APP_VERSION}")
-    with urlopen(request, timeout=60) as response:
-        result = json.loads(response.read().decode("utf-8"))
+    try:
+        with urlopen(request, timeout=60) as response:
+            result = json.loads(response.read().decode("utf-8"))
+    except HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"Telegra.ph rechazó la imagen ({error.code}). {detail}") from error
     if not result.get("ok"):
         raise RuntimeError(result.get("error", "No se pudo subir la imagen"))
     uploaded = result.get("result", [])
@@ -555,7 +565,7 @@ class TelegraphWriter(QMainWindow):
             self,
             "Seleccionar imagen",
             str(Path.home()),
-            "Imágenes (*.png *.jpg *.jpeg *.gif *.webp);;Todos los archivos (*)"
+            "Imágenes (*.png *.jpg *.jpeg *.gif);;Todos los archivos (*)"
         )
         if not filename:
             return
