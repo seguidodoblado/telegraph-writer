@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QToolBar, QSplitter,
     QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit, QLabel,
     QPushButton, QDialog, QDialogButtonBox, QFormLayout, QVBoxLayout,
-    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy
+    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy, QStyle
 )
 
 APP_NAME = "Telegraph Writer"
@@ -359,12 +359,17 @@ class TelegraphWriter(QMainWindow):
         self.settings_action = QAction("Ajustes", self); self.settings_action.triggered.connect(self.settings)
         self.theme_action = QAction("Cambiar tema", self); self.theme_action.triggered.connect(self.toggle_theme)
         self.refresh_action = QAction("Actualizar lista", self); self.refresh_action.setShortcut("F5"); self.refresh_action.triggered.connect(self.load_pages)
+        self.new_action.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
+        self.open_action.setIcon(self.style().standardIcon(QStyle.SP_DirOpenIcon))
+        self.save_action.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
+        self.image_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
+        self.settings_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogDetailedView))
 
     def create_toolbar(self):
         toolbar = QToolBar("Principal")
         toolbar.setMovable(False)
         toolbar.setIconSize(QSize(20, 20))
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextOnly)
+        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.addToolBar(toolbar)
         toolbar.addAction(self.new_action)
         toolbar.addAction(self.open_action)
