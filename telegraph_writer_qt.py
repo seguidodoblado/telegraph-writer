@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 APP_NAME = "Telegraph Writer"
 APP_VERSION = "2.1.0"
 API_URL = "https://api.telegra.ph"
+UPLOAD_URL = "https://telegra.ph/upload"
 CONFIG_DIR = Path.home() / ".config" / "telegraph-writer"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DRAFT_DIR = Path.home() / "Telegra.ph"
@@ -73,7 +74,7 @@ def upload_image(filename):
         f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
         f"Content-Type: {content_type}\r\n\r\n"
     ).encode("utf-8") + file_data + f"\r\n--{boundary}--\r\n".encode("ascii")
-    request = Request(f"{API_URL}/upload", data=body, method="POST")
+    request = Request(UPLOAD_URL, data=body, method="POST")
     request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
     request.add_header("User-Agent", f"Telegraph-Writer/{APP_VERSION}")
     with urlopen(request, timeout=60) as response:
