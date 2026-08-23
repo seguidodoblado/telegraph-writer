@@ -519,6 +519,15 @@ class TelegraphWriter(QMainWindow):
         self.dirty = False; self.document_status.setText("Documento local"); self.update_stats(); self.status.showMessage(f"Abierto: {path.name}")
 
     def publish(self):
+        if self.current_path:
+            QMessageBox.warning(
+                self,
+                APP_NAME,
+                "Este documento ya está publicado en Telegra.ph.\n\n"
+                "Utiliza «Actualizar» para aplicar las modificaciones "
+                "sin crear un artículo duplicado."
+            )
+            return
         if not self.token:
             self.settings()
             if not self.token: return
