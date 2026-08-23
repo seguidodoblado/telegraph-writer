@@ -13,12 +13,12 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from PySide6.QtCore import Qt, QThread, Signal, QSize
-from PySide6.QtGui import QAction, QFont, QKeySequence
+from PySide6.QtGui import QAction, QFont, QKeySequence, QIcon
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QToolBar, QSplitter,
     QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit, QLabel,
     QPushButton, QDialog, QDialogButtonBox, QFormLayout, QVBoxLayout,
-    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy, QStyle
+    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy
 )
 
 APP_NAME = "Telegraph Writer"
@@ -359,11 +359,12 @@ class TelegraphWriter(QMainWindow):
         self.settings_action = QAction("Ajustes", self); self.settings_action.triggered.connect(self.settings)
         self.theme_action = QAction("Cambiar tema", self); self.theme_action.triggered.connect(self.toggle_theme)
         self.refresh_action = QAction("Actualizar lista", self); self.refresh_action.setShortcut("F5"); self.refresh_action.triggered.connect(self.load_pages)
-        self.new_action.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
-        self.open_action.setIcon(self.style().standardIcon(QStyle.SP_DirOpenIcon))
-        self.save_action.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
-        self.image_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
-        self.settings_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogDetailedView))
+        icon_dir = Path(__file__).resolve().parent / "icons"
+        self.new_action.setIcon(QIcon(str(icon_dir / "new.svg")))
+        self.open_action.setIcon(QIcon(str(icon_dir / "open.svg")))
+        self.save_action.setIcon(QIcon(str(icon_dir / "save.svg")))
+        self.image_action.setIcon(QIcon(str(icon_dir / "image.svg")))
+        self.settings_action.setIcon(QIcon(str(icon_dir / "settings.svg")))
 
     def create_toolbar(self):
         toolbar = QToolBar("Principal")
