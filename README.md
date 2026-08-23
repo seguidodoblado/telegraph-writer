@@ -21,30 +21,31 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 
 La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se instala automáticamente durante la instalación.
 
-## Instalación recomendada
+## Instalación desde el PPA
 
-El instalador prepara la aplicación, crea un entorno virtual e instala un lanzador de escritorio:
-
-```bash
-git clone https://github.com/seguidodoblado/telegraph-writer.git
-cd telegraph-writer
-./install.sh
-```
-
-El instalador puede solicitar la contraseña de `sudo` para instalar la aplicación en `/opt/telegraph-writer`. Debe ejecutarse con un usuario normal, no como `root`.
-
-Después de la instalación, abre **Telegraph Writer** desde el menú de aplicaciones. También puedes ejecutarlo directamente:
+La opción recomendada para Ubuntu y distribuciones basadas en Ubuntu es utilizar el PPA de Launchpad. El paquete incluye sus dependencias de Python y crea el lanzador de escritorio:
 
 ```bash
-/home/USUARIO/.venvs/telegraph-writer/bin/python \
-  /opt/telegraph-writer/telegraph_writer_qt.py
+sudo add-apt-repository ppa:seguidodoblado/telegraph-writer
+sudo apt update
+sudo apt install telegraph-writer
 ```
 
-Sustituye `USUARIO` por el nombre de tu usuario del sistema.
+Después, abre **Telegraph Writer** desde el menú de aplicaciones. Las futuras actualizaciones estarán disponibles mediante el gestor de paquetes.
 
-## Instalación manual
+## Instalación desde GitHub
 
-Si prefieres no utilizar el instalador:
+También puedes descargar el paquete `.deb` correspondiente desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instalarlo con:
+
+```bash
+sudo apt install ./telegraph-writer_2.1.0-1_all.deb
+```
+
+El archivo debe estar en el directorio actual o debes indicar su ruta completa.
+
+## Ejecución desde el código fuente
+
+Para desarrollo o pruebas, puedes ejecutar el proyecto directamente en un entorno virtual:
 
 ```bash
 python3 -m venv .venv
@@ -52,6 +53,8 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 python telegraph_writer_qt.py
 ```
+
+El código fuente está disponible en [GitHub](https://github.com/seguidodoblado/telegraph-writer) y en [Launchpad](https://git.launchpad.net/telegraph-writer).
 
 ## Configuración
 
@@ -83,12 +86,14 @@ El access token permite modificar los artículos de la cuenta. No lo compartas n
 
 ## Actualización
 
-Si instalaste la aplicación con `install.sh`, vuelve a ejecutar el instalador desde una copia actualizada del repositorio. Para actualizar manualmente:
+Si instalaste la aplicación desde el PPA, actualízala con:
 
 ```bash
-cd /opt/telegraph-writer
-sudo git pull --ff-only
+sudo apt update
+sudo apt upgrade telegraph-writer
 ```
+
+Si instalaste un `.deb` descargado desde GitHub, descarga la nueva versión desde [Releases](https://github.com/seguidodoblado/telegraph-writer/releases) y vuelve a instalarla con `sudo apt install ./archivo.deb`.
 
 ## Licencia
 
