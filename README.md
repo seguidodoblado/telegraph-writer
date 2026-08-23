@@ -40,7 +40,9 @@ La primera vez, abre **Ajustes** e introduce tu access token de Telegra.ph. El t
 
 ## Lanzador de escritorio
 
-El proyecto incluye `telegraph-writer.desktop`. Hay que adaptar las rutas del archivo si el usuario o la ubicación del proyecto son diferentes.
+El proyecto incluye `telegraph-writer.desktop`, preparado para la instalación que hemos utilizado en Linux Mint (`~/Escritorio` y `~/.venvs/telegraph-writer`). Si clonas el proyecto en otra ubicación, adapta la línea `Exec` del lanzador.
+
+El icono está en `telegraph-writer.svg`.
 
 ## Seguridad
 
@@ -48,4 +50,4 @@ El proyecto incluye `telegraph-writer.desktop`. Hay que adaptar las rutas del ar
 
 ## Licencia
 
-MIT.
+Consulta `LICENSE`, incluida en este repositorio.
