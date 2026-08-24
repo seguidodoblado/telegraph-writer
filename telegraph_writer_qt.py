@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 APP_NAME = "Telegraph Writer"
-APP_VERSION = "2.1.0"
+APP_VERSION = "2.1.2"
 API_URL = "https://api.telegra.ph"
 IMAGE_UPLOAD_URL = "https://catbox.moe/user/api.php"
 CONFIG_DIR = Path.home() / ".config" / "telegraph-writer"

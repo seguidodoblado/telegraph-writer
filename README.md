@@ -23,12 +23,12 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 
 La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se instala automáticamente durante la instalación.
 
-## Instalación desde GitHub
+## Instalación
 
-Descarga el paquete `.deb` correspondiente desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instálalo con:
+Debido a problemas de disponibilidad de PySide6 en los repositorios usados por Launchpad, el PPA no se utiliza para distribuir esta aplicación. El método oficial es descargar el paquete `.deb` desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instalarlo con:
 
 ```bash
-sudo apt install ./telegraph-writer_2.1.0-1_all.deb
+sudo apt install ./telegraph-writer_2.1.2-1_all.deb
 ```
 
 El archivo debe estar en el directorio actual o debes indicar su ruta completa.
