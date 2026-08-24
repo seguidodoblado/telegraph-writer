@@ -8,12 +8,4 @@ override_dh_virtualenv:
 		--skip-install --install-suffix telegraph-writer
 
 override_dh_auto_install:
-	install -D -m 755 telegraph-writer-wrapper debian/telegraph-writer/usr/bin/telegraph-writer
-	install -D -m 644 telegraph_writer_qt.py debian/telegraph-writer/usr/share/telegraph-writer/telegraph_writer_qt.py
-	install -D -m 644 telegraph-writer.svg debian/telegraph-writer/usr/share/icons/hicolor/scalable/apps/telegraph-writer.svg
-	install -D -m 644 telegraph-writer.desktop debian/telegraph-writer/usr/share/applications/telegraph-writer.desktop
-	install -D -m 644 icons/new.svg debian/telegraph-writer/usr/share/telegraph-writer/icons/new.svg
-	install -D -m 644 icons/open.svg debian/telegraph-writer/usr/share/telegraph-writer/icons/open.svg
-	install -D -m 644 icons/save.svg debian/telegraph-writer/usr/share/telegraph-writer/icons/save.svg
-	install -D -m 644 icons/image.svg debian/telegraph-writer/usr/share/telegraph-writer/icons/image.svg
-	install -D -m 644 icons/settings.svg debian/telegraph-writer/usr/share/telegraph-writer/icons/settings.svg
+	:

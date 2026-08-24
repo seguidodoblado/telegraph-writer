@@ -23,21 +23,9 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 
 La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se instala automáticamente durante la instalación.
 
-## Instalación desde el PPA
-
-La opción recomendada para Ubuntu y distribuciones basadas en Ubuntu es utilizar el PPA de Launchpad. El paquete incluye sus dependencias de Python y crea el lanzador de escritorio:
-
-```bash
-sudo add-apt-repository ppa:seguidodoblado/telegraph-writer
-sudo apt update
-sudo apt install telegraph-writer
-```
-
-Después, abre **Telegraph Writer** desde el menú de aplicaciones. Las futuras actualizaciones estarán disponibles mediante el gestor de paquetes.
-
 ## Instalación desde GitHub
 
-También puedes descargar el paquete `.deb` correspondiente desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instalarlo con:
+Descarga el paquete `.deb` correspondiente desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instálalo con:
 
 ```bash
 sudo apt install ./telegraph-writer_2.1.0-1_all.deb
@@ -89,14 +77,11 @@ El access token permite modificar los artículos de la cuenta. No lo compartas n
 
 ## Actualización
 
-Si instalaste la aplicación desde el PPA, actualízala con:
+Si instalaste un `.deb` descargado desde GitHub, descarga la nueva versión desde [Releases](https://github.com/seguidodoblado/telegraph-writer/releases) y vuelve a instalarla con:
 
 ```bash
-sudo apt update
-sudo apt upgrade telegraph-writer
+sudo apt install ./archivo.deb
 ```
-
-Si instalaste un `.deb` descargado desde GitHub, descarga la nueva versión desde [Releases](https://github.com/seguidodoblado/telegraph-writer/releases) y vuelve a instalarla con `sudo apt install ./archivo.deb`.
 
 ## Licencia
 
