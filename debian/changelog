@@ -1,3 +1,9 @@
+telegraph-writer (2.1.2-1) noble; urgency=medium
+
+  * Install the application wrapper at the correct executable path.
+
+ -- José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Mon, 24 Aug 2026 15:30:00 +0200
+
 telegraph-writer (2.1.1-1) noble; urgency=medium
 
   * Include the desktop launcher and application assets in the package.
