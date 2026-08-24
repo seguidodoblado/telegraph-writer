@@ -28,7 +28,7 @@ La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se insta
 Debido a problemas de disponibilidad de PySide6 en los repositorios usados por Launchpad, el PPA no se utiliza para distribuir esta aplicación. El método oficial es descargar el paquete `.deb` desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instalarlo con:
 
 ```bash
-sudo apt install ./telegraph-writer_2.1.2-1_all.deb
+sudo apt install ./telegraph-writer_x.x.x-x_all.deb
 ```
 
 El archivo debe estar en el directorio actual o debes indicar su ruta completa.
@@ -74,14 +74,6 @@ La aplicación sube la imagen a Catbox, recibe una URL pública y la inserta en 
 ## Seguridad
 
 El access token permite modificar los artículos de la cuenta. No lo compartas ni subas `~/.config/telegraph-writer/config.json` a un repositorio.
-
-## Actualización
-
-Si instalaste un `.deb` descargado desde GitHub, descarga la nueva versión desde [Releases](https://github.com/seguidodoblado/telegraph-writer/releases) y vuelve a instalarla con:
-
-```bash
-sudo apt install ./archivo.deb
-```
 
 ## Licencia
 
