@@ -1,3 +1,9 @@
+telegraph-writer (2.1.2-2) noble; urgency=low
+
+  * Fix icon settings.svg.
+  
+-- José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Mon, 24 Aug 2026 17:00:00 +0200
+
 telegraph-writer (2.1.2-1) noble; urgency=medium
 
   * Install the application wrapper at the correct executable path.
