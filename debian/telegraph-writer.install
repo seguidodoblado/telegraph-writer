@@ -2,8 +2,3 @@ telegraph-writer usr/bin
 telegraph_writer_qt.py usr/share/telegraph-writer
 telegraph-writer.svg usr/share/icons/hicolor/scalable/apps
 telegraph-writer.desktop usr/share/applications
-icons/new.svg usr/share/telegraph-writer/icons
-icons/open.svg usr/share/telegraph-writer/icons
-icons/save.svg usr/share/telegraph-writer/icons
-icons/image.svg usr/share/telegraph-writer/icons
-icons/settings.svg usr/share/telegraph-writer/icons

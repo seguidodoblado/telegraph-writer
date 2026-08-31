@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QToolBar, QSplitter,
     QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit, QLabel,
     QPushButton, QDialog, QDialogButtonBox, QFormLayout, QVBoxLayout,
-    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy
+    QHBoxLayout, QMessageBox, QFileDialog, QStatusBar, QSizePolicy, QStyle
 )
 
 APP_NAME = "Telegraph Writer"
@@ -332,7 +332,8 @@ class TelegraphWriter(QMainWindow):
         super().__init__()
         self.config = load_config()
         self.token = self.config.get("access_token", "")
-        self.dark_mode = self.config.get("dark_mode", True)
+        # En instalaciones nuevas se respeta el tema del sistema.
+        self.dark_mode = self.config.get("dark_mode", False)
         self.draft_dir = Path(self.config.get("draft_dir", str(DRAFT_DIR))).expanduser()
         self.pages = []
         self.filtered_pages = []
@@ -373,12 +374,11 @@ class TelegraphWriter(QMainWindow):
         self.settings_action = QAction("Ajustes", self); self.settings_action.triggered.connect(self.settings)
         self.theme_action = QAction("Cambiar tema", self); self.theme_action.triggered.connect(self.toggle_theme)
         self.refresh_action = QAction("Actualizar lista", self); self.refresh_action.setShortcut("F5"); self.refresh_action.triggered.connect(self.load_pages)
-        icon_dir = Path(__file__).resolve().parent / "icons"
-        self.new_action.setIcon(QIcon(str(icon_dir / "new.svg")))
-        self.open_action.setIcon(QIcon(str(icon_dir / "open.svg")))
-        self.save_action.setIcon(QIcon(str(icon_dir / "save.svg")))
-        self.image_action.setIcon(QIcon(str(icon_dir / "image.svg")))
-        self.settings_action.setIcon(QIcon(str(icon_dir / "settings.svg")))
+        self.new_action.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
+        self.open_action.setIcon(self.style().standardIcon(QStyle.SP_DirOpenIcon))
+        self.save_action.setIcon(self.style().standardIcon(QStyle.SP_DialogSaveButton))
+        self.image_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
+        self.settings_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogDetailedView))
 
     def create_toolbar(self):
         toolbar = QToolBar("Principal")
@@ -440,6 +440,7 @@ class TelegraphWriter(QMainWindow):
     def apply_theme(self):
         palette = QPalette()
         if self.dark_mode:
+            # Misma paleta base oscura que Joseflix Request.
             palette.setColor(QPalette.Window, QColor("#202124"))
             palette.setColor(QPalette.WindowText, QColor("#eeeeee"))
             palette.setColor(QPalette.Base, QColor("#303134"))
@@ -450,17 +451,12 @@ class TelegraphWriter(QMainWindow):
             palette.setColor(QPalette.Highlight, QColor("#315a78"))
             palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
         else:
-            palette.setColor(QPalette.Window, QColor("#f5f5f5"))
-            palette.setColor(QPalette.WindowText, QColor("#202124"))
-            palette.setColor(QPalette.Base, QColor("#ffffff"))
-            palette.setColor(QPalette.AlternateBase, QColor("#f0f0f0"))
-            palette.setColor(QPalette.Text, QColor("#202124"))
-            palette.setColor(QPalette.Button, QColor("#ffffff"))
-            palette.setColor(QPalette.ButtonText, QColor("#202124"))
-            palette.setColor(QPalette.Highlight, QColor("#bcd7f0"))
-            palette.setColor(QPalette.HighlightedText, QColor("#202124"))
+            # La opción clara no fuerza una paleta: recupera la del escritorio.
+            palette = self.style().standardPalette()
         QApplication.instance().setPalette(palette)
         self.setStyleSheet("")
+        if hasattr(self, "account_label") and self.account_label.text().startswith("● Conectado"):
+            self.account_label.setStyleSheet("color: #7bd88f;" if self.dark_mode else "color: #287a3d;")
         if hasattr(self, "theme_button"):
             self.theme_button.setObjectName("themeButton")
             self.theme_button.style().unpolish(self.theme_button)
@@ -486,6 +482,7 @@ class TelegraphWriter(QMainWindow):
     def load_pages(self):
         if not self.token:
             self.account_label.setText("Sin configurar")
+            self.account_label.setStyleSheet("")
             return
         self.status.showMessage("Comprobando cuenta…")
         self.worker = ApiWorker("getAccountInfo", {"access_token": self.token, "fields": json.dumps(["short_name", "author_name", "author_url", "page_count"])})
@@ -493,6 +490,7 @@ class TelegraphWriter(QMainWindow):
 
     def account_loaded(self, account):
         self.account_label.setText(f"● Conectado\n{account.get('short_name', '')}\n{account.get('page_count', 0)} artículos")
+        self.account_label.setStyleSheet("color: #7bd88f;" if self.dark_mode else "color: #287a3d;")
         self.worker = ApiWorker("getPageList", {"access_token": self.token, "limit": 200})
         self.worker.success.connect(self.pages_loaded); self.worker.failure.connect(self.api_error); self.worker.start()
 
