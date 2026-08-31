@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from PySide6.QtCore import Qt, QThread, Signal, QSize
-from PySide6.QtGui import QAction, QFont, QKeySequence, QIcon, QPixmap
+from PySide6.QtGui import QAction, QFont, QKeySequence, QIcon, QPixmap, QPalette, QColor
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QToolBar, QSplitter,
     QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit, QLabel,
@@ -349,7 +349,7 @@ class TelegraphWriter(QMainWindow):
         self.load_pages()
 
     def setup_font(self):
-        QApplication.instance().setFont(QFont("Ubuntu Sans", 10))
+        QApplication.instance().setFont(QFont("Ubuntu Sans", 13))
 
     def build_ui(self):
         self.create_actions()
@@ -438,52 +438,29 @@ class TelegraphWriter(QMainWindow):
         editor_layout.addLayout(bottom); splitter.addWidget(editor_panel); splitter.setSizes([310, 900])
 
     def apply_theme(self):
+        palette = QPalette()
         if self.dark_mode:
-            self.setStyleSheet("""
-                QMainWindow { background:#181a1b; }
-                QWidget { background:#181a1b; color:#eeeeee; }
-                QToolBar { background:#202324; border:none; border-bottom:1px solid #34383b; spacing:4px; padding:5px; }
-                QToolButton { padding:7px 12px; border-radius:6px; }
-                QToolButton:hover { background:#303537; } QToolButton:pressed { background:#3a4145; }
-                QMenuBar { background:#202324; color:#eeeeee; } QMenuBar::item:selected { background:#303537; }
-                QMenu { background:#242728; color:#eeeeee; border:1px solid #3b4043; } QMenu::item:selected { background:#315a78; }
-                QLineEdit,QPlainTextEdit { background:#151718; color:#eeeeee; border:1px solid #34383b; border-radius:6px; selection-background-color:#315a78; }
-                QLineEdit:focus,QPlainTextEdit:focus { border:1px solid #5b9bd5; }
-                #titleEdit { font-size:24px; padding:8px 12px; border:none; border-bottom:1px solid #34383b; border-radius:0; }
-                QListWidget { background:#202324; border:none; border-radius:6px; outline:none; }
-                QListWidget::item { padding:10px; border-radius:5px; } QListWidget::item:hover { background:#2c3032; }
-                QListWidget::item:selected { background:#315a78; color:white; }
-                #sectionTitle { font-size:12px; font-weight:bold; color:#b8bec2; }
-                #accountLabel { color:#7bd88f; padding:8px 2px; }
-                QStatusBar { background:#202324; color:#9da4a8; border-top:1px solid #34383b; }
-                QPushButton { background:#2a2e30; color:#eeeeee; border:1px solid #41474a; border-radius:6px; padding:8px 15px; }
-                QPushButton:hover { background:#353a3d; } QPushButton:pressed { background:#41484c; }
-                #primaryButton { background:#315a78; border-color:#4a789b; } #primaryButton:hover { background:#3b6b8d; }
-                QScrollBar:vertical { background:#181a1b; width:12px; } QScrollBar::handle:vertical { background:#444b4f; border-radius:6px; min-height:30px; }
-                #themeButton { background:#2a2e30; border:1px solid #41474a; border-radius:6px; font-size:17px; padding:0; }
-                #themeButton:hover { background:#353a3d; }
-            """)
+            palette.setColor(QPalette.Window, QColor("#202124"))
+            palette.setColor(QPalette.WindowText, QColor("#eeeeee"))
+            palette.setColor(QPalette.Base, QColor("#303134"))
+            palette.setColor(QPalette.AlternateBase, QColor("#282a2d"))
+            palette.setColor(QPalette.Text, QColor("#eeeeee"))
+            palette.setColor(QPalette.Button, QColor("#3c4043"))
+            palette.setColor(QPalette.ButtonText, QColor("#eeeeee"))
+            palette.setColor(QPalette.Highlight, QColor("#315a78"))
+            palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
         else:
-            self.setStyleSheet("""
-                QMainWindow { background:#f5f5f5; }
-                QWidget { background:#f5f5f5; color:#202124; }
-                QToolBar { background:#ffffff; border:none; border-bottom:1px solid #dddddd; spacing:4px; padding:5px; }
-                QToolButton { padding:7px 12px; border-radius:6px; } QToolButton:hover { background:#eeeeee; } QToolButton:pressed { background:#e3e3e3; }
-                QMenuBar { background:#ffffff; color:#202124; } QMenuBar::item:selected { background:#eeeeee; }
-                QMenu { background:#ffffff; color:#202124; border:1px solid #dddddd; } QMenu::item:selected { background:#dcecff; }
-                QLineEdit,QPlainTextEdit { background:#ffffff; color:#202124; border:1px solid #d5d5d5; border-radius:6px; selection-background-color:#bcd7f0; }
-                QLineEdit:focus,QPlainTextEdit:focus { border:1px solid #6aa5d8; }
-                #titleEdit { font-size:24px; padding:8px 12px; border:none; border-bottom:1px solid #dddddd; border-radius:0; }
-                QListWidget { background:#ffffff; border:1px solid #dddddd; border-radius:6px; outline:none; }
-                QListWidget::item { padding:10px; border-radius:5px; } QListWidget::item:hover { background:#eeeeee; }
-                QListWidget::item:selected { background:#dcecff; color:#202124; }
-                #sectionTitle { font-size:12px; font-weight:bold; color:#555555; } #accountLabel { color:#287a3d; padding:8px 2px; }
-                QStatusBar { background:#ffffff; color:#666666; border-top:1px solid #dddddd; }
-                QPushButton { background:#ffffff; color:#202124; border:1px solid #cccccc; border-radius:6px; padding:8px 15px; }
-                QPushButton:hover { background:#eeeeee; } QPushButton:pressed { background:#e2e2e2; }
-                #primaryButton { background:#1976d2; color:white; border-color:#1976d2; } #primaryButton:hover { background:#2b82d0; }
-                #themeButton { background:#ffffff; border:1px solid #cccccc; border-radius:6px; font-size:17px; padding:0; } #themeButton:hover { background:#eeeeee; }
-            """)
+            palette.setColor(QPalette.Window, QColor("#f5f5f5"))
+            palette.setColor(QPalette.WindowText, QColor("#202124"))
+            palette.setColor(QPalette.Base, QColor("#ffffff"))
+            palette.setColor(QPalette.AlternateBase, QColor("#f0f0f0"))
+            palette.setColor(QPalette.Text, QColor("#202124"))
+            palette.setColor(QPalette.Button, QColor("#ffffff"))
+            palette.setColor(QPalette.ButtonText, QColor("#202124"))
+            palette.setColor(QPalette.Highlight, QColor("#bcd7f0"))
+            palette.setColor(QPalette.HighlightedText, QColor("#202124"))
+        QApplication.instance().setPalette(palette)
+        self.setStyleSheet("")
         if hasattr(self, "theme_button"):
             self.theme_button.setObjectName("themeButton")
             self.theme_button.style().unpolish(self.theme_button)
