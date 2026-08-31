@@ -2,7 +2,7 @@
 
 ## GitHub rechaza un archivo grande
 
-No subas `debian/telegraph-writer/`: contiene el entorno virtual generado por `dh-virtualenv`. El `.gitignore` ya lo excluye.
+No subas `.venv/` ni `.deb-stage/`: contienen el entorno virtual y los archivos temporales del paquete. El `.gitignore` ya los excluye.
 
 ## Error al subir imágenes
 
@@ -14,9 +14,8 @@ Si aparece una advertencia, el documento ya tiene un `current_path`. Usa **Actua
 
 ## Iconos ausentes
 
-La carpeta `icons/` debe estar junto a `telegraph_writer_qt.py` y debe incluirse en el paquete.
+El archivo `telegraph-writer.svg` debe estar en la raíz del proyecto para que el lanzador y el diálogo Acerca de puedan utilizarlo.
 
 ## Error con el access token
 
 Comprueba el token desde **Ajustes** y usa **Comprobar conexión**. La configuración se guarda en `~/.config/telegraph-writer/config.json`.
-

@@ -37,39 +37,38 @@ La rama de seguimiento de VS Code se fija con `git push -u origin main`. Los sig
 En Ubuntu/Linux Mint instala:
 
 ```bash
-sudo apt install devscripts debhelper dh-python dh-virtualenv \
-  python3-all python3-venv lintian
+sudo apt install dpkg-dev python3-venv lintian
 ```
 
-`python3-pyside6` no está disponible en todas las versiones de Ubuntu/Mint. Por eso este proyecto usa `dh-virtualenv` para incluir PySide6 en el paquete.
+PySide6 se instala una vez en `.venv` y ese entorno se incluye completo en el paquete.
 
 Construye el paquete:
 
 ```bash
-debuild -us -uc -b
+./build-deb.sh
 ```
 
 El `.deb` aparecerá en el directorio superior:
 
 ```text
-../telegraph-writer_2.1.0-1_all.deb
+../telegraph-writer_2.1.2-2_all.deb
 ```
 
 Instálalo localmente:
 
 ```bash
-sudo apt install ../telegraph-writer_2.1.0-1_all.deb
+sudo apt install ../telegraph-writer_2.1.2-2_all.deb
 ```
 
 Compruébalo:
 
 ```bash
-lintian ../telegraph-writer_2.1.0-1_all.deb
+lintian ../telegraph-writer_2.1.2-2_all.deb
 ```
 
 ## 5. Publicar en GitHub
 
-Crea una Release con la etiqueta `v2.1.0`, título `Telegraph Writer 2.1.0` y adjunta el `.deb`. El repositorio contiene código y metadatos; el entorno virtual de `dh-virtualenv` no debe subirse.
+Crea una Release con la etiqueta correspondiente a la versión de `APP_VERSION` y adjunta el `.deb`. El entorno virtual `.venv` no debe subirse.
 
 ## 6. Publicar en Launchpad
 

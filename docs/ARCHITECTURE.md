@@ -13,7 +13,7 @@ Telegraph Writer es una aplicación de escritorio Python/PySide6. La interfaz se
 - los hilos de trabajo para no bloquear la interfaz;
 - el empaquetado visual de la vista previa.
 
-Los SVG de `icons/` son los iconos monocromáticos de la toolbar. `telegraph-writer.svg` es el icono del lanzador de escritorio.
+`telegraph-writer.svg` es el icono del lanzador y del diálogo Acerca de. La toolbar utiliza iconos estándar de Qt.
 
 ## Configuración y constantes
 
@@ -106,7 +106,7 @@ La ventana conecta esas señales a métodos como `account_loaded()`, `pages_load
 - `insert_image()`: selecciona, sube e inserta una imagen.
 - `settings()`: permite guardar y probar el access token.
 
-La toolbar usa iconos SVG de `icons/` y conserva el texto de cada acción. Los botones de publicar, actualizar y vista previa están junto al editor, donde son acciones contextuales.
+La toolbar usa iconos estándar de Qt y conserva el texto de cada acción. Los botones de publicar, actualizar y vista previa están junto al editor, donde son acciones contextuales.
 
 ## Flujo de publicación
 
@@ -124,17 +124,17 @@ La carpeta `debian/` contiene el empaquetado fuente:
 
 - `control`: metadatos, mantenedor y dependencias de construcción;
 - `changelog`: versión y cambios de Debian;
-- `rules`: instrucciones de `debhelper` y `dh-virtualenv`;
+- `rules`: configuración Debian heredada para herramientas de `debhelper`;
 - `source/format`: formato del paquete fuente;
-- `.gitignore`: evita incluir el entorno virtual generado en `debian/telegraph-writer/`.
+- `.gitignore`: evita incluir el entorno virtual `.venv` y la carpeta temporal `.deb-stage`.
 
-`dh-virtualenv` instala PySide6 dentro de `/opt/venvs/telegraph-writer` durante la construcción. El wrapper `/usr/bin/telegraph-writer` ejecuta la aplicación con ese Python empaquetado. El resultado es un `.deb` autónomo, sin depender de que exista `python3-pyside6` en los repositorios del sistema.
+`build-deb.sh` copia el entorno `.venv` del proyecto dentro de `/opt/venvs/telegraph-writer`. El wrapper `/usr/bin/telegraph-writer` ejecuta la aplicación con ese Python empaquetado. El resultado es un `.deb` autónomo, sin depender de que exista `python3-pyside6` en los repositorios del sistema.
 
 ## Archivos generados que no deben versionarse
 
 No deben entrar en Git:
 
-- `debian/telegraph-writer/`;
+- `.venv/` y `.deb-stage/`;
 - `debian/.debhelper/`;
 - `debian/files`;
 - `debian/*.substvars`;
