@@ -8,6 +8,7 @@ debian/*.substvars
 
 # Entornos virtuales y cachés locales
 .venv/
+.deb-stage/
 venv/
 __pycache__/
 *.py[cod]

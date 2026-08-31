@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from PySide6.QtCore import Qt, QThread, Signal, QSize
-from PySide6.QtGui import QAction, QFont, QKeySequence, QIcon
+from PySide6.QtGui import QAction, QFont, QKeySequence, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QToolBar, QSplitter,
     QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit, QLabel,
@@ -689,16 +689,35 @@ class TelegraphWriter(QMainWindow):
         else: event.ignore()
 
     def about(self):
-        QMessageBox.about(
-            self,
-            APP_NAME,
-            f"<h2>Telegraph Writer</h2>"
-            f"<p>Cliente de escritorio para Telegra.ph.</p>"
-            f"<p>Versión {APP_VERSION} · Qt / PySide6</p>"
-            f"<p>Desarrollado por <b>seguidodoblado</b><br>"
-            f"<a href=\"mailto:jose.antonio.seguido@gmail.com\">"
-            f"jose.antonio.seguido@gmail.com</a></p>"
+        about_dialog = QDialog(self)
+        about_dialog.setWindowTitle(f"Acerca de {APP_NAME}")
+        about_dialog.setWindowIcon(QIcon(str(Path(__file__).resolve().parent / "telegraph-writer.svg")))
+        about_dialog.setFixedSize(380, 500)
+        layout = QVBoxLayout(about_dialog)
+        icon_label = QLabel()
+        icon_label.setAlignment(Qt.AlignCenter)
+        icon_label.setPixmap(QPixmap(str(Path(__file__).resolve().parent / "telegraph-writer.svg")).scaled(112, 112, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        layout.addWidget(icon_label)
+        title = QLabel(f"<h2>{APP_NAME}</h2>")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        details = QLabel(
+            f"Versión {APP_VERSION}<br><br>"
+            "Cliente de escritorio para Telegra.ph.<br><br>"
+            "<b>Desarrollador:</b><br>"
+            "seguidodoblado<br>"
+            "<a href=\"mailto:jose.antonio.seguido@gmail.com\">"
+            "jose.antonio.seguido@gmail.com</a><br><br>"
+            "<b>Dependencia:</b><br>PySide6"
         )
+        details.setAlignment(Qt.AlignCenter)
+        details.setOpenExternalLinks(True)
+        layout.addWidget(details)
+        layout.addStretch()
+        close_button = QPushButton("Cerrar")
+        close_button.clicked.connect(about_dialog.accept)
+        layout.addWidget(close_button, alignment=Qt.AlignRight)
+        about_dialog.exec()
 
 
 def html_escape(text):

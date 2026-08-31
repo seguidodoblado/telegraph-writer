@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/venvs/telegraph-writer/bin/python /usr/share/telegraph-writer/telegraph_writer_qt.py "$@"
