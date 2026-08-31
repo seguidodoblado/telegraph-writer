@@ -17,7 +17,7 @@ git clone https://git.launchpad.net/telegraph-writer
 cd telegraph-writer
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install PySide6
 python telegraph_writer_qt.py
 ```
 

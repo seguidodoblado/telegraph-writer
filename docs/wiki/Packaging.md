@@ -6,7 +6,7 @@
 sudo apt install devscripts debhelper dh-python dh-virtualenv python3-all python3-venv lintian
 ```
 
-Como `python3-pyside6` no está disponible en todas las versiones de Ubuntu/Mint, `dh-virtualenv` instala PySide6 desde `requirements.txt` dentro del paquete.
+Como `python3-pyside6` no está disponible en todas las versiones de Ubuntu/Mint, el entorno virtual del proyecto incluye PySide6 dentro del paquete.
 
 ## Construcción local
 
@@ -30,4 +30,3 @@ Launchpad necesita el paquete fuente, no el `.deb` binario:
 debuild -S -sa
 dput ppa:seguidodoblado/telegraph-writer ../telegraph-writer_2.1.0-1_source.changes
 ```
-

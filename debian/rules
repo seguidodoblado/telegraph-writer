@@ -1,11 +1,4 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv
-
-override_dh_virtualenv:
-	dh_virtualenv --python python3 --builtin-venv --requirements requirements.txt \
-		--skip-install --install-suffix telegraph-writer
-
-override_dh_auto_install:
-	:
+	dh $@

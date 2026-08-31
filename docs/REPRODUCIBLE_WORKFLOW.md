@@ -17,7 +17,7 @@ Para desarrollo también puede usarse el repositorio de GitHub.
 sudo apt install python3 python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install PySide6
 python telegraph_writer_qt.py
 ```
 

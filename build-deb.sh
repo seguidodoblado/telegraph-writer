@@ -7,7 +7,7 @@ version=$(dpkg-parsechangelog -S Version)
 package="$base/../telegraph-writer_${version}_all.deb"
 
 test -x "$base/.venv/bin/python" || {
-    echo "Falta .venv. Ejecuta: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2
+    echo "Falta .venv. Ejecuta: python3 -m venv .venv && .venv/bin/pip install PySide6" >&2
     exit 1
 }
 
