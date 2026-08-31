@@ -1,3 +1,9 @@
+telegraph-writer (2.2.0-1) noble; urgency=medium
+
+  * The graphical style was redesigned using a more native Qt approach.
+
+ -- José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Mon, 31 Aug 2026 23:46:00 +0200 
+
 telegraph-writer (2.1.2-2) noble; urgency=low
 
   * Fix icon settings.svg.
