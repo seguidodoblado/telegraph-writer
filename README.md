@@ -19,7 +19,7 @@ Aplicación de escritorio GTK4 para crear, editar y publicar artículos en [Tele
 
 ## Wiki
 
-La documentación disponible se encuentra en la [wiki](https://github.com/seguidodoblado/telegraph-writer/wiki)
+La documentación disponible se encuentra en la [WIKI](https://github.com/seguidodoblado/telegraph-writer/wiki)
 
 ## Licencia
 

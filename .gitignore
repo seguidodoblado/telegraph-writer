@@ -1,14 +1,6 @@
 # Artefactos generados al construir paquetes Debian
 debian/telegraph-writer/
-debian/.debhelper/
-debian/debhelper-build-stamp
-debian/files
-debian/*.debhelper
-debian/*.substvars
 
 # Entornos virtuales y cachés locales
-.venv/
-.deb-stage/
-venv/
 __pycache__/
 *.py[cod]
