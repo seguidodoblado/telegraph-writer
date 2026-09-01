@@ -1,4 +1,4 @@
 telegraph-writer usr/bin
-telegraph_writer_qt.py usr/share/telegraph-writer
+telegraph_writer_gtk.py usr/share/telegraph-writer
 telegraph-writer.svg usr/share/icons/hicolor/scalable/apps
 telegraph-writer.desktop usr/share/applications

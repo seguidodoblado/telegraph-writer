@@ -1,2 +1,2 @@
-#!/bin/sh
-exec /opt/venvs/telegraph-writer/bin/python /usr/share/telegraph-writer/telegraph_writer_qt.py "$@"
+#!/bin/bash
+exec -a telegraph-writer /usr/bin/python3 /usr/share/telegraph-writer/telegraph_writer_gtk.py "$@"
