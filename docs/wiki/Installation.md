@@ -16,7 +16,7 @@ El paquete utiliza Python 3 y GTK4/PyGObject del sistema y crea el lanzador de e
 git clone https://git.launchpad.net/telegraph-writer
 cd telegraph-writer
 sudo apt install python3 python3-gi gir1.2-gtk-4.0
-python3 telegraph_writer_gtk.py
+python3 telegraph_writer.py
 ```
 
 Configura el access token desde **Ajustes**. Desde ese mismo diálogo también puedes elegir la carpeta donde se guardan los borradores locales. La ubicación predeterminada es `~/Telegra.ph`.

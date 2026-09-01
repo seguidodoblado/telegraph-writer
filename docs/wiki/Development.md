@@ -1,6 +1,6 @@
 # Desarrollo y arquitectura
 
-La aplicación está concentrada en `telegraph_writer_gtk.py` y utiliza Python 3, PyGObject y GTK4.
+La aplicación está concentrada en `telegraph_writer.py` y utiliza Python 3, PyGObject y GTK4.
 
 ## Componentes
 

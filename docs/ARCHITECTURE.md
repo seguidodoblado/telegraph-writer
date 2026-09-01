@@ -4,7 +4,7 @@ Este documento explica cómo está construido el programa y qué responsabilidad
 
 ## Resumen
 
-Telegraph Writer es una aplicación de escritorio Python/PyGObject/GTK4. La interfaz se concentra en `telegraph_writer_gtk.py`, que contiene:
+Telegraph Writer es una aplicación de escritorio Python/PyGObject/GTK4. La interfaz se concentra en `telegraph_writer.py`, que contiene:
 
 - la ventana principal y sus controles;
 - la comunicación HTTP con Telegra.ph y Catbox;

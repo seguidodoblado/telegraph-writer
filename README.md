@@ -23,8 +23,6 @@ Aplicación de escritorio GTK4 para crear, editar y publicar artículos en [Tele
 - GTK4 y PyGObject (`python3-gi`, `gir1.2-gtk-4.0`).
 - Una cuenta de Telegra.ph y su access token.
 
-No necesita PySide6 ni un entorno virtual: utiliza las bibliotecas GTK4/PyGObject del sistema.
-
 ## Instalación
 
 Descarga el paquete `.deb` desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instálalo con:
@@ -41,7 +39,7 @@ Para desarrollo o pruebas, instala las dependencias del sistema y ejecuta:
 
 ```bash
 sudo apt install python3 python3-gi gir1.2-gtk-4.0
-python3 telegraph_writer_gtk.py
+python3 telegraph_writer.py
 ```
 
 El código fuente está disponible en [GitHub](https://github.com/seguidodoblado/telegraph-writer) y en [Launchpad](https://git.launchpad.net/telegraph-writer).

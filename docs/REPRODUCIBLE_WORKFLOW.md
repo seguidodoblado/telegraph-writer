@@ -18,7 +18,7 @@ sudo apt install python3 python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
 sudo apt install python3-gi gir1.2-gtk-4.0
-python3 telegraph_writer_gtk.py
+python3 telegraph_writer.py
 ```
 
 ## 3. Configurar GitHub y Launchpad
