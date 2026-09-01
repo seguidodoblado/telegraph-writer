@@ -3,26 +3,24 @@
 ## Dependencias
 
 ```bash
-sudo apt install dpkg-dev python3-venv lintian
+sudo apt install dpkg-dev lintian
 ```
 
-Como `python3-pyside6` no está disponible en todas las versiones de Ubuntu/Mint, el entorno virtual del proyecto incluye PySide6 dentro del paquete.
+El paquete utiliza las dependencias GTK4/PyGObject proporcionadas por el sistema y no incluye un entorno virtual.
 
 ## Construcción local
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install PySide6
 ./build-deb.sh
-sudo apt install ../telegraph-writer_2.1.2-2_all.deb
-lintian ../telegraph-writer_2.1.2-2_all.deb
+sudo apt install ../telegraph-writer_2.2.0-1_all.deb
+lintian ../telegraph-writer_2.2.0-1_all.deb
 ```
 
 El entorno `.venv` y la carpeta temporal `.deb-stage` están excluidos por `.gitignore`.
 
 ## GitHub Release
 
-Usa la etiqueta y el título correspondientes a la versión indicada en `APP_VERSION` y adjunta el `.deb`.
+La versión se obtiene automáticamente de la primera entrada de `debian/changelog`; no hay que editar una constante de versión.
 
 ## PPA de Launchpad
 

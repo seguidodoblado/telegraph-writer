@@ -4,7 +4,7 @@ Este documento explica cómo está construido el programa y qué responsabilidad
 
 ## Resumen
 
-Telegraph Writer es una aplicación de escritorio Python/PySide6. La interfaz se concentra en `telegraph_writer_qt.py`, que contiene:
+Telegraph Writer es una aplicación de escritorio Python/PyGObject/GTK4. La interfaz se concentra en `telegraph_writer_gtk.py`, que contiene:
 
 - la ventana principal y sus controles;
 - la comunicación HTTP con Telegra.ph y Catbox;
@@ -128,7 +128,7 @@ La carpeta `debian/` contiene el empaquetado fuente:
 - `source/format`: formato del paquete fuente;
 - `.gitignore`: evita incluir el entorno virtual `.venv` y la carpeta temporal `.deb-stage`.
 
-`build-deb.sh` copia el entorno `.venv` del proyecto dentro de `/opt/venvs/telegraph-writer`. El wrapper `/usr/bin/telegraph-writer` ejecuta la aplicación con ese Python empaquetado. El resultado es un `.deb` autónomo, sin depender de que exista `python3-pyside6` en los repositorios del sistema.
+`build-deb.sh` copia el programa y un fichero `VERSION` generado desde `debian/changelog`. El wrapper `/usr/bin/telegraph-writer` ejecuta la aplicación con `/usr/bin/python3`. El resultado es un paquete pequeño que utiliza GTK4/PyGObject del sistema.
 
 ## Archivos generados que no deben versionarse
 

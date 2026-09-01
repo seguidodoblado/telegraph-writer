@@ -17,8 +17,8 @@ Para desarrollo también puede usarse el repositorio de GitHub.
 sudo apt install python3 python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install PySide6
-python telegraph_writer_qt.py
+sudo apt install python3-gi gir1.2-gtk-4.0
+python3 telegraph_writer_gtk.py
 ```
 
 ## 3. Configurar GitHub y Launchpad
@@ -40,7 +40,7 @@ En Ubuntu/Linux Mint instala:
 sudo apt install dpkg-dev python3-venv lintian
 ```
 
-PySide6 se instala una vez en `.venv` y ese entorno se incluye completo en el paquete.
+El paquete utiliza PyGObject y GTK4 del sistema; no incluye un entorno virtual.
 
 Construye el paquete:
 
@@ -84,8 +84,7 @@ Launchpad construye el `.deb` para las series de Ubuntu configuradas en el PPA.
 
 ## 7. Repetir una nueva versión
 
-1. Actualiza `APP_VERSION` en `telegraph_writer_qt.py`.
-2. Cambia la versión y el texto de `debian/changelog`.
+1. Cambia la versión y el texto de `debian/changelog`.
 3. Actualiza el README si cambia el procedimiento de instalación.
 4. Haz commit y push a GitHub.
 5. Haz push a Launchpad.

@@ -2,7 +2,7 @@
 
 ![Telegraph Writer](./telegraph-writer.svg)
 
-Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.ph](https://telegra.ph/). Incluye un editor Markdown sencillo, gestión de borradores locales y una interfaz gráfica basada en Qt.
+Aplicación de escritorio GTK4 para crear, editar y publicar artículos en [Telegra.ph](https://telegra.ph/). Incluye un editor Markdown sencillo, gestión de borradores locales y vista previa en el navegador.
 
 ![Telegraph Writer](docs/screenshot.png)
 
@@ -20,14 +20,14 @@ Aplicación de escritorio para crear, editar y publicar artículos en [Telegra.p
 ## Requisitos
 
 - Linux con Python 3.10 o posterior.
-- `python3-venv` para crear el entorno virtual.
+- GTK4 y PyGObject (`python3-gi`, `gir1.2-gtk-4.0`).
 - Una cuenta de Telegra.ph y su access token.
 
-La dependencia de Python, [PySide6](https://pypi.org/project/PySide6/), se instala automáticamente durante la instalación.
+No necesita PySide6 ni un entorno virtual: utiliza las bibliotecas GTK4/PyGObject del sistema.
 
 ## Instalación
 
-Debido a problemas de disponibilidad de PySide6 en los repositorios usados por Launchpad, el PPA no se utiliza para distribuir esta aplicación. El método oficial es descargar el paquete `.deb` desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instalarlo con:
+Descarga el paquete `.deb` desde la página de [Releases de GitHub](https://github.com/seguidodoblado/telegraph-writer/releases) e instálalo con:
 
 ```bash
 sudo apt install ./telegraph-writer_x.x.x-x_all.deb
@@ -37,13 +37,11 @@ El archivo debe estar en el directorio actual o debes indicar su ruta completa.
 
 ## Ejecución desde el código fuente
 
-Para desarrollo o pruebas, puedes ejecutar el proyecto directamente en un entorno virtual:
+Para desarrollo o pruebas, instala las dependencias del sistema y ejecuta:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install PySide6
-python telegraph_writer_qt.py
+sudo apt install python3 python3-gi gir1.2-gtk-4.0
+python3 telegraph_writer_gtk.py
 ```
 
 El código fuente está disponible en [GitHub](https://github.com/seguidodoblado/telegraph-writer) y en [Launchpad](https://git.launchpad.net/telegraph-writer).

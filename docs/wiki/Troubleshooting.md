@@ -2,7 +2,18 @@
 
 ## GitHub rechaza un archivo grande
 
-No subas `.venv/` ni `.deb-stage/`: contienen el entorno virtual y los archivos temporales del paquete. El `.gitignore` ya los excluye.
+No subas `.deb-stage/`: contiene archivos temporales del paquete. El `.gitignore` ya lo excluye.
+
+## Launchpad rechaza la clave SSH
+
+Si aparece `Permission denied (publickey)`, carga la clave en el agente SSH:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/seguidodoblado
+```
+
+Si funcionaba antes y deja de hacerlo, reiniciar la sesión del sistema suele volver a cargar el agente.
 
 ## Error al subir imágenes
 
