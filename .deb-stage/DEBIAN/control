@@ -1,0 +1,9 @@
+Package: telegraph-writer
+Version: 2.3.0-1
+Section: editors
+Priority: optional
+Architecture: all
+Depends: python3
+Maintainer: seguidodoblado <jose.antonio.seguido@gmail.com>
+Description: Cliente de escritorio para Telegra.ph
+ Editor Markdown para crear, publicar y actualizar artículos de Telegra.ph.

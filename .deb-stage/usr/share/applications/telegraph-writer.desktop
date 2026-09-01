@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Telegraph Writer
+Comment=Cliente de escritorio para Telegra.ph
+Exec=/usr/bin/telegraph-writer
+Icon=telegraph-writer
+StartupWMClass=telegraph-writer
+Type=Application
+Categories=Office;TextEditor;Utility;
