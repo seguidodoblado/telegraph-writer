@@ -16,7 +16,6 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
-APP_ID = "com.seguidodoblado.TelegraphWriter"
 APP_NAME = "Telegraph Writer"
 CHANGELOG_FILE = Path(__file__).resolve().parent / "debian" / "changelog"
 try:
@@ -108,7 +107,9 @@ def markdown_to_nodes(markdown):
 
 class TelegraphWriter(Gtk.Application):
     def __init__(self):
-        super().__init__(application_id=APP_ID)
+        # Igual que joseflix-request: la asociación con el icono del dock
+        # se hace mediante el nombre del lanzador y StartupWMClass.
+        super().__init__()
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):

@@ -8,11 +8,10 @@ test -n "$version" || { echo "No se pudo leer la versión de debian/changelog" >
 package="$base/../telegraph-writer_${version}_all.deb"
 
 rm -rf "$stage"
-mkdir -p "$stage/DEBIAN" "$stage/usr/share/telegraph-writer/debian" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/scalable/apps"
-cp "$base/telegraph_writer.py" "$stage/usr/share/telegraph-writer/"
-printf '%s\n' "${version%-*}" > "$stage/usr/share/telegraph-writer/VERSION"
-cp "$base/debian/changelog" "$stage/usr/share/telegraph-writer/debian/"
-cp "$base/telegraph-writer.svg" "$stage/usr/share/telegraph-writer/"
+mkdir -p "$stage/DEBIAN" "$stage/opt/telegraph-writer" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/scalable/apps"
+cp "$base/telegraph_writer.py" "$stage/opt/telegraph-writer/"
+printf '%s\n' "${version%-*}" > "$stage/opt/telegraph-writer/VERSION"
+cp "$base/telegraph-writer.svg" "$stage/opt/telegraph-writer/"
 cp "$base/debian/telegraph-writer-launcher" "$stage/usr/bin/telegraph-writer"
 cp "$base/debian/telegraph-writer.desktop" "$stage/usr/share/applications/"
 cp "$base/telegraph-writer.svg" "$stage/usr/share/icons/hicolor/scalable/apps/"
@@ -23,12 +22,12 @@ Version: $version
 Section: editors
 Priority: optional
 Architecture: all
-Depends: python3
+Depends: python3, python3-gi, gir1.2-gtk-4.0
 Maintainer: seguidodoblado <jose.antonio.seguido@gmail.com>
 Description: Cliente de escritorio para Telegra.ph
  Editor Markdown para crear, publicar y actualizar artículos de Telegra.ph.
 EOF
 
-chmod 755 "$stage/usr/bin/telegraph-writer" "$stage/usr/share/telegraph-writer/telegraph_writer.py"
+chmod 755 "$stage/usr/bin/telegraph-writer" "$stage/opt/telegraph-writer/telegraph_writer.py"
 dpkg-deb --build --root-owner-group "$stage" "$package"
 echo "Paquete generado: $package"
