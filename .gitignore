@@ -1,10 +1,5 @@
 # Artefactos generados al construir paquetes Debian
 .deb-stage/
-debian/.debhelper/
-debian/debhelper-build-stamp
-debian/files
-debian/*.debhelper
-debian/*.substvars
 
 # Entornos virtuales y cachés locales
 __pycache__/
