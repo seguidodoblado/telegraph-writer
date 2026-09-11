@@ -1,2 +1,0 @@
-#!/bin/bash
-exec -a telegraph-writer python3 /opt/telegraph-writer/telegraph_writer.py "$@"
