@@ -569,7 +569,7 @@ class TelegraphWriter(Gtk.Application):
 
     def set_theme(self, dark):
         settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-theme-name", "Adwaita-dark" if dark else "Adwaita")
+        settings.set_property("gtk-application-prefer-dark-theme", dark)
         config = self.read_config()
         config["dark_mode"] = dark
         CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)

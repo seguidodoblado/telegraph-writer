@@ -1,3 +1,10 @@
+telegraph-writer (2.3.1-1ubuntu1) noble; urgency=medium
+
+  * Stop forcing Adwaita theme on toggle; respect the system GTK theme
+    accent color
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Tue, 22 Sep 2026 15:07:50 +0200
+
 telegraph-writer (2.3.0-1ubuntu1) noble; urgency=medium
 
   * GTK4 and PyGObject migration
