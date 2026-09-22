@@ -1,3 +1,12 @@
+telegraph-writer (2.3.2-1ubuntu1) noble; urgency=medium
+
+  * Fix light theme not switching back after the previous fix; restart
+    the process to apply the theme, deriving the light/dark Mint-Y
+    variant of the system theme so the accent color is preserved in both
+    modes
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Tue, 22 Sep 2026 15:21:03 +0200
+
 telegraph-writer (2.3.1-1ubuntu1) noble; urgency=medium
 
   * Stop forcing Adwaita theme on toggle; respect the system GTK theme

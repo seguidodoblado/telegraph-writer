@@ -2,6 +2,7 @@
 """Ventana GTK4 de Telegraph Writer (primera fase de la migración)."""
 
 import sys
+import os
 import json
 import html
 import re
@@ -88,6 +89,19 @@ def inline_to_nodes(text):
     return result or [""]
 
 
+def theme_variant(name, dark):
+    """Deriva el nombre del tema GTK hermano (claro/oscuro) preservando el
+    acento, asumiendo la convención Mint-Y[-Dark]-<Accent> de Linux Mint,
+    con caso especial para Adwaita/Adwaita-dark."""
+    base = re.sub(r"-Dark(?=-|$)", "", name, count=1)
+    if not dark:
+        return base
+    if base == "Adwaita":
+        return "Adwaita-dark"
+    parts = base.split("-", 2)
+    return f"{parts[0]}-{parts[1]}-Dark" + (f"-{parts[2]}" if len(parts) > 2 else "") if len(parts) >= 2 else base + "-Dark"
+
+
 def markdown_to_nodes(markdown):
     nodes = []
     for line in markdown.replace("\r\n", "\n").split("\n"):
@@ -116,6 +130,11 @@ class TelegraphWriter(Gtk.Application):
         if hasattr(self, "window"):
             self.window.present()
             return
+        # gtk-theme-name refleja aquí el tema XSETTINGS del sistema (p. ej.
+        # Mint-Y-Orange); se captura antes de tocar la propiedad para poder
+        # derivar la variante oscura sin perder el acento del usuario.
+        self.system_theme = Gtk.Settings.get_default().get_property("gtk-theme-name")
+        self.presented = False
         self.window = Gtk.ApplicationWindow(application=app, title=APP_NAME)
         self.window.set_default_size(1250, 800)
         self.window.set_resizable(True)
@@ -125,11 +144,38 @@ class TelegraphWriter(Gtk.Application):
         self.current_url = None
         self.build_ui()
         self.add_actions()
+        self.restore_pending_session()
         saved_theme = self.read_config().get("dark_mode")
         if saved_theme is not None:
             self.set_theme(bool(saved_theme))
         self.load_pages()
         self.window.present()
+        self.presented = True
+
+    def collect_session_state(self):
+        start, end = self.editor.get_buffer().get_bounds()
+        return {
+            "title": self.title_entry.get_text(),
+            "text": self.editor.get_buffer().get_text(start, end, False),
+            "current_file": self.current_file,
+            "current_path": self.current_path,
+            "current_url": self.current_url,
+        }
+
+    def restore_pending_session(self):
+        # Al reiniciar el proceso para aplicar el tema (ver set_theme), el
+        # borrador sin guardar se guarda temporalmente en config.json para no
+        # perderlo; aquí se recupera y se limpia la entrada.
+        config = self.read_config()
+        pending = config.pop("_pending_session", None)
+        if not pending:
+            return
+        self.title_entry.set_text(pending.get("title", ""))
+        self.editor.get_buffer().set_text(pending.get("text", ""))
+        self.current_file = pending.get("current_file")
+        self.current_path = pending.get("current_path")
+        self.current_url = pending.get("current_url")
+        CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def add_actions(self):
         callbacks = {
@@ -568,12 +614,19 @@ class TelegraphWriter(Gtk.Application):
         return self.menu_with_icons((("Claro", "app.light", "weather-clear-symbolic"), ("Oscuro", "app.dark", "weather-clear-night-symbolic")))
 
     def set_theme(self, dark):
-        settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-application-prefer-dark-theme", dark)
+        # Cambiar gtk-theme-name en caliente no repinta una ventana ya
+        # presentada en Cinnamon/Mint (solo surte efecto antes del primer
+        # present()), así que si la app ya está en marcha se reinicia el
+        # proceso tras persistir la preferencia y el borrador en curso.
+        Gtk.Settings.get_default().set_property("gtk-theme-name", theme_variant(self.system_theme, dark))
         config = self.read_config()
         config["dark_mode"] = dark
         CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-        CONFIG_FILE.write_text(json.dumps(config), encoding="utf-8")
+        if self.presented:
+            config["_pending_session"] = self.collect_session_state()
+            CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
+            os.execvpe(sys.executable, [sys.executable, os.path.abspath(__file__)], os.environ)
+        CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
         self.statusbar.set_text("Tema oscuro aplicado" if dark else "Tema claro aplicado")
     def help_menu(self):
         return self.menu_with_icons((("Acerca de", "app.about", "help-about-symbolic"),))
