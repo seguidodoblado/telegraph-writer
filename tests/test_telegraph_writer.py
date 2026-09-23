@@ -93,15 +93,27 @@ class ThemeVariantTests(unittest.TestCase):
 
 
 class PreviewTests(unittest.TestCase):
-    def test_text_is_escaped_and_not_rendered(self):
-        page = tw.render_preview("<T>", "**a** <b>\nlinea")
+    def test_markdown_is_rendered(self):
+        page = tw.render_preview("t", "# Uno\nTexto **negrita** y *cursiva*\n- a\n- b\n> cita\n---")
+        for fragment in ("<h3>Uno</h3>", "<p>Texto <strong>negrita</strong> y <em>cursiva</em></p>", "<ul><li>a</li><li>b</li></ul>", "<blockquote><p>cita</p></blockquote>", "<hr>"):
+            self.assertIn(fragment, page)
+
+    def test_text_and_title_are_escaped(self):
+        page = tw.render_preview("<T>", "hola <b>x</b>\n```\n<i>\n```")
         self.assertIn("&lt;T&gt;", page)
-        self.assertIn("**a** &lt;b&gt;<br>\nlinea", page)
+        self.assertIn("<p>hola &lt;b&gt;x&lt;/b&gt;</p>", page)
+        self.assertIn("<pre>&lt;i&gt;</pre>", page)
+        self.assertNotIn("<b>", page)
 
     def test_image_url_is_escaped_once(self):
         page = tw.render_preview("t", "![x](http://i/a.png?a=1&b=2)")
-        self.assertIn('src="http://i/a.png?a=1&amp;b=2"', page)
+        self.assertIn('<img src="http://i/a.png?a=1&amp;b=2">', page)
         self.assertNotIn("&amp;amp;", page)
+
+    def test_relative_image_and_unsafe_link(self):
+        page = tw.render_preview("t", "![](/file/a.jpg) [x](javascript:alert(1))")
+        self.assertIn('src="https://telegra.ph/file/a.jpg"', page)
+        self.assertIn('<a href="#">x</a>', page)
 
 
 class FetchAllPagesTests(unittest.TestCase):
