@@ -17,6 +17,11 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
+# GTK deriva el WM_CLASS de la ventana del prgname (por defecto el nombre del
+# .py); se fija para que coincida con StartupWMClass del .desktop y Cinnamon
+# asocie la ventana a su icono también tras reiniciar para cambiar de tema.
+GLib.set_prgname("telegraph-writer")
+
 APP_NAME = "Telegraph Writer"
 CHANGELOG_FILE = Path(__file__).resolve().parent / "debian" / "changelog"
 try:
@@ -121,8 +126,8 @@ def markdown_to_nodes(markdown):
 
 class TelegraphWriter(Gtk.Application):
     def __init__(self):
-        # Igual que joseflix-request: la asociación con el icono del dock
-        # se hace mediante el nombre del lanzador y StartupWMClass.
+        # La asociación con el icono del dock se hace mediante el prgname
+        # (WM_CLASS) fijado al inicio del módulo y StartupWMClass.
         super().__init__()
         self.connect("activate", self.on_activate)
 
@@ -590,7 +595,12 @@ class TelegraphWriter(Gtk.Application):
         if self.presented:
             config["_pending_session"] = self.collect_session_state()
             CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
-            os.execvpe(sys.executable, [sys.executable, os.path.abspath(__file__)], os.environ)
+            # Instalado, el lanzador hace "exec -a telegraph-writer python3 ...",
+            # así que sys.executable apunta al propio script /usr/bin/telegraph-writer;
+            # reejecutarlo le pasaría la ruta del .py como argumento y
+            # Gtk.Application.run() saldría con "can not open files". Se usa el
+            # intérprete real y se conserva argv[0] para el icono del dock.
+            os.execve("/proc/self/exe", [sys.orig_argv[0], os.path.abspath(__file__)], os.environ)
         CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
         self.statusbar.set_text("Tema oscuro aplicado" if dark else "Tema claro aplicado")
     def about(self):

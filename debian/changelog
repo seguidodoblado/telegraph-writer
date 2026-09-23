@@ -1,3 +1,16 @@
+telegraph-writer (2.3.3-1) noble; urgency=medium
+
+  * Fix theme toggle restart in the installed package and keep the panel
+    icon
+
+ -- Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Wed, 23 Sep 2026 18:34:29 +0200
+
+telegraph-writer (2.3.2-1ubuntu2) noble; urgency=medium
+
+  * Remove dead UI code, centralize API calls and unify the version
+
+ -- Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Wed, 23 Sep 2026 16:20:18 +0200
+
 telegraph-writer (2.3.2-1ubuntu1) noble; urgency=medium
 
   * Fix light theme not switching back after the previous fix; restart
