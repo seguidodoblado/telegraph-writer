@@ -1,3 +1,19 @@
+telegraph-writer (2.4.0-1) noble; urgency=medium
+
+  * Package copyright and changelog, fix permissions, bump to 2.4.0-1
+
+ -- Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Wed, 23 Sep 2026 19:31:19 +0200
+
+telegraph-writer (2.4.0-1) noble; urgency=medium
+
+  * Fix data loss when updating loaded articles (keep inline formatting
+    and heading levels), ask before discarding unsaved changes, paginate
+    the article list, keep the config file private, support ordered
+    lists, code blocks and rules, and ship copyright and changelog in
+    the package
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Wed, 23 Sep 2026 19:16:24 +0200
+
 telegraph-writer (2.3.3-1) noble; urgency=medium
 
   * Fix theme toggle restart in the installed package and keep the panel

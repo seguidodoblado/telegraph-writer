@@ -8,13 +8,30 @@ test -n "$version" || { echo "No se pudo leer la versión de debian/changelog" >
 package="$base/../telegraph-writer_${version}_all.deb"
 
 rm -rf "$stage"
-mkdir -p "$stage/DEBIAN" "$stage/opt/telegraph-writer" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/scalable/apps"
-cp "$base/telegraph_writer.py" "$stage/opt/telegraph-writer/"
+doc="$stage/usr/share/doc/telegraph-writer"
+mkdir -p "$stage/DEBIAN" "$stage/opt/telegraph-writer" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/scalable/apps" "$doc"
+install -m 755 "$base/telegraph_writer.py" "$stage/opt/telegraph-writer/telegraph_writer.py"
 printf '%s\n' "$version" > "$stage/opt/telegraph-writer/VERSION"
-cp "$base/telegraph-writer.svg" "$stage/opt/telegraph-writer/"
-cp "$base/debian/telegraph-writer-launcher" "$stage/usr/bin/telegraph-writer"
-cp "$base/debian/telegraph-writer.desktop" "$stage/usr/share/applications/"
-cp "$base/telegraph-writer.svg" "$stage/usr/share/icons/hicolor/scalable/apps/"
+install -m 644 "$base/telegraph-writer.svg" "$stage/opt/telegraph-writer/telegraph-writer.svg"
+install -m 755 "$base/debian/telegraph-writer-launcher" "$stage/usr/bin/telegraph-writer"
+install -m 644 "$base/debian/telegraph-writer.desktop" "$stage/usr/share/applications/telegraph-writer.desktop"
+install -m 644 "$base/telegraph-writer.svg" "$stage/usr/share/icons/hicolor/scalable/apps/telegraph-writer.svg"
+cat > "$doc/copyright" <<EOF
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: telegraph-writer
+Source: https://github.com/seguidodoblado/telegraph-writer
+
+Files: *
+Copyright: 2026 seguidodoblado <jose.antonio.seguido@gmail.com>
+License: GPL-3
+
+License: GPL-3
+ En los sistemas Debian el texto completo de la licencia GNU GPL versión 3
+ está disponible en /usr/share/common-licenses/GPL-3.
+EOF
+chmod 644 "$doc/copyright"
+gzip -9n -c "$base/debian/changelog" > "$doc/changelog.Debian.gz"
+chmod 644 "$doc/changelog.Debian.gz"
 
 cat > "$stage/DEBIAN/control" <<EOF
 Package: telegraph-writer
@@ -28,6 +45,8 @@ Description: Cliente de escritorio para Telegra.ph
  Editor Markdown para crear, publicar y actualizar artículos de Telegra.ph.
 EOF
 
-chmod 755 "$stage/usr/bin/telegraph-writer" "$stage/opt/telegraph-writer/telegraph_writer.py"
+# Los permisos no deben depender del umask de quien construye el paquete.
+chmod 644 "$stage/DEBIAN/control" "$stage/opt/telegraph-writer/VERSION"
+find "$stage" -type d -exec chmod 755 {} +
 dpkg-deb --build --root-owner-group "$stage" "$package"
 echo "Paquete generado: $package"
