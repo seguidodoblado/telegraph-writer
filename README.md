@@ -15,7 +15,6 @@ Aplicación de escritorio GTK4 para crear, editar y publicar artículos en [Tele
 - Subir imágenes locales a Catbox e insertarlas automáticamente en el artículo.
 - Guardar borradores localmente en archivos Markdown.
 - Elegir entre modo claro y modo oscuro.
-- Atajos de teclado para las operaciones habituales.
 
 ## Wiki
 

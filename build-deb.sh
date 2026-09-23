@@ -10,7 +10,7 @@ package="$base/../telegraph-writer_${version}_all.deb"
 rm -rf "$stage"
 mkdir -p "$stage/DEBIAN" "$stage/opt/telegraph-writer" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/scalable/apps"
 cp "$base/telegraph_writer.py" "$stage/opt/telegraph-writer/"
-printf '%s\n' "${version%-*}" > "$stage/opt/telegraph-writer/VERSION"
+printf '%s\n' "$version" > "$stage/opt/telegraph-writer/VERSION"
 cp "$base/telegraph-writer.svg" "$stage/opt/telegraph-writer/"
 cp "$base/debian/telegraph-writer-launcher" "$stage/usr/bin/telegraph-writer"
 cp "$base/debian/telegraph-writer.desktop" "$stage/usr/share/applications/"
@@ -22,7 +22,7 @@ Version: $version
 Section: editors
 Priority: optional
 Architecture: all
-Depends: python3, python3-gi, gir1.2-gtk-4.0
+Depends: python3, python3-gi, gir1.2-gtk-4.0 (>= 4.10)
 Maintainer: seguidodoblado <jose.antonio.seguido@gmail.com>
 Description: Cliente de escritorio para Telegra.ph
  Editor Markdown para crear, publicar y actualizar artículos de Telegra.ph.

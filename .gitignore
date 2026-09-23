@@ -1,5 +1,6 @@
 # Artefactos generados al construir paquetes Debian
 .deb-stage/
+*.deb
 
 # Entornos virtuales y cachés locales
 __pycache__/

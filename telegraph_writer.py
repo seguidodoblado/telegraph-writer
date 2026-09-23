@@ -143,7 +143,6 @@ class TelegraphWriter(Gtk.Application):
         self.current_path = None
         self.current_url = None
         self.build_ui()
-        self.add_actions()
         self.restore_pending_session()
         saved_theme = self.read_config().get("dark_mode")
         if saved_theme is not None:
@@ -177,25 +176,6 @@ class TelegraphWriter(Gtk.Application):
         self.current_url = pending.get("current_url")
         CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def add_actions(self):
-        callbacks = {
-            "settings": self.settings,
-            "new": self.new_article,
-            "open": self.open_file,
-            "save": self.save_file,
-            "publish": self.publish,
-            "update": self.update_article,
-            "open-browser": self.open_in_browser,
-            "preview": self.preview,
-            "light": lambda: self.set_theme(False),
-            "dark": lambda: self.set_theme(True),
-            "about": self.about,
-        }
-        for name, callback in callbacks.items():
-            action = Gio.SimpleAction.new(name, None)
-            action.connect("activate", lambda *_args, cb=callback: cb())
-            self.add_action(action)
-
     def read_config(self):
         try:
             return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
@@ -220,34 +200,33 @@ class TelegraphWriter(Gtk.Application):
             self.statusbar.set_text("Sin configurar · abre Ajustes para introducir el access token")
             return
         try:
-            params = urllib.parse.urlencode({"access_token": token, "limit": 200}).encode()
-            request = urllib.request.Request("https://api.telegra.ph/getPageList", data=params, method="POST")
-            with urllib.request.urlopen(request, timeout=30) as response:
-                result = json.loads(response.read().decode("utf-8"))
-            if not result.get("ok"):
-                raise RuntimeError(result.get("error", "Error de Telegra.ph"))
-            self.pages = result["result"].get("pages", [])
+            pages = telegraph_api("getPageList", {"access_token": token, "limit": 200}).get("pages", [])
+            self.pages = pages
             self.filter_articles(self.search)
-            self.statusbar.set_text(f"{len(result['result'].get('pages', []))} artículos cargados")
+            self.statusbar.set_text(f"{len(pages)} artículos cargados")
             self.connection_dot.set_markup('<span foreground="#78d47d">●</span>')
             self.connection_label.set_text("Conectado")
-            self.article_count_label.set_text(f"{len(result['result'].get('pages', []))} artículos")
+            self.article_count_label.set_text(f"{len(pages)} artículos")
+            self.account_label.set_text(self.account_name(token))
         except Exception as error:
             self.connection_dot.set_markup('<span foreground="#e06c75">●</span>')
             self.connection_label.set_text("Sin conexión")
             self.statusbar.set_text(f"Error: {error}")
 
-    def load_article(self, _listbox, row):
-        page = row.page
-        if not page:
-            return
+    def account_name(self, token):
         try:
+            account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name"])})
+            return account.get("short_name") or "Cuenta de Telegra.ph"
+        except Exception:
+            return "Cuenta de Telegra.ph"
+
+    def load_article(self, _listbox, row):
+        try:
+            page = getattr(row, "page", None)
+            if not page:
+                return
             token = self.read_config().get("access_token", "")
-            params = urllib.parse.urlencode({"access_token": token, "return_content": "true"}).encode()
-            request = urllib.request.Request(f"https://api.telegra.ph/getPage/{page['path']}", data=params, method="POST")
-            with urllib.request.urlopen(request, timeout=30) as response:
-                result = json.loads(response.read().decode("utf-8"))
-            article = result["result"]
+            article = telegraph_api("getPage", {"access_token": token, "return_content": "true"}, page["path"])
             self.current_path = article.get("path", page.get("path"))
             self.current_url = article.get("url", page.get("url"))
             self.title_entry.set_text(article.get("title", ""))
@@ -430,11 +409,7 @@ class TelegraphWriter(Gtk.Application):
             if not token:
                 feedback.set_text("Introduce un access token."); return
             try:
-                params = urllib.parse.urlencode({"access_token": token, "fields": json.dumps(["short_name", "page_count"])}).encode()
-                request = urllib.request.Request("https://api.telegra.ph/getAccountInfo", data=params, method="POST")
-                with urllib.request.urlopen(request, timeout=30) as response: result = json.loads(response.read().decode("utf-8"))
-                if not result.get("ok"): raise RuntimeError(result.get("error", "Error de Telegra.ph"))
-                account = result["result"]
+                account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name", "page_count"])})
                 feedback.set_text(f"Conectado: {account.get('short_name', '')} · {account.get('page_count', 0)} artículos")
             except Exception as error:
                 feedback.set_text(f"Error: {error}")
@@ -470,7 +445,7 @@ class TelegraphWriter(Gtk.Application):
         paned.set_end_child(self.build_editor())
         root.append(paned)
 
-        self.statusbar = Gtk.Label(label="0 palabras · 0 caracteres", xalign=1)
+        self.statusbar = Gtk.Label(label="", xalign=1)
         self.statusbar.set_margin_start(12)
         self.statusbar.set_margin_end(12)
         self.statusbar.set_margin_top(4)
@@ -549,10 +524,6 @@ class TelegraphWriter(Gtk.Application):
         listbox = Gtk.ListBox()
         self.article_list = listbox
         listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        for title, views in (("Prueba 2", 2), ("Testing", 10), ("Prueba", 17)):
-            row = Gtk.ListBoxRow()
-            row.set_child(Gtk.Label(label=f"{title}\n{views} vistas", xalign=0))
-            listbox.append(row)
         scroll = Gtk.ScrolledWindow()
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroll.set_vexpand(True); scroll.set_child(listbox)
@@ -565,7 +536,8 @@ class TelegraphWriter(Gtk.Application):
         self.connection_label = Gtk.Label(label="Sin configurar", xalign=0)
         connection.append(self.connection_dot); connection.append(self.connection_label)
         account.append(connection)
-        account.append(Gtk.Label(label="seguidodoblado", xalign=0))
+        self.account_label = Gtk.Label(label="Sin configurar", xalign=0)
+        account.append(self.account_label)
         self.article_count_label = Gtk.Label(label="0 artículos", xalign=0)
         account.append(self.article_count_label)
         box.append(account)
@@ -606,13 +578,6 @@ class TelegraphWriter(Gtk.Application):
         box.append(actions)
         return box
 
-    def file_menu(self):
-        return self.menu_with_icons((("Nuevo", "app.new", "document-new-symbolic"), ("Abrir", "app.open", "document-open-symbolic"), ("Guardar", "app.save", "document-save-symbolic")))
-    def telegraph_menu(self):
-        return self.menu_with_icons((("Publicar", "app.publish", "document-send-symbolic"), ("Actualizar", "app.update", "view-refresh-symbolic"), ("Abrir artículo en navegador", "app.open-browser", "web-browser-symbolic")))
-    def view_menu(self):
-        return self.menu_with_icons((("Claro", "app.light", "weather-clear-symbolic"), ("Oscuro", "app.dark", "weather-clear-night-symbolic")))
-
     def set_theme(self, dark):
         # Cambiar gtk-theme-name en caliente no repinta una ventana ya
         # presentada en Cinnamon/Mint (solo surte efecto antes del primer
@@ -628,17 +593,6 @@ class TelegraphWriter(Gtk.Application):
             os.execvpe(sys.executable, [sys.executable, os.path.abspath(__file__)], os.environ)
         CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
         self.statusbar.set_text("Tema oscuro aplicado" if dark else "Tema claro aplicado")
-    def help_menu(self):
-        return self.menu_with_icons((("Acerca de", "app.about", "help-about-symbolic"),))
-
-    def menu_with_icons(self, items):
-        menu = Gio.Menu()
-        for label, action, icon_name in items:
-            item = Gio.MenuItem.new(label, action)
-            item.set_attribute_value("icon", GLib.Variant("s", icon_name))
-            menu.append_item(item)
-        return menu
-
     def about(self):
         dialog = Gtk.Dialog(transient_for=self.window, modal=True)
         dialog.set_title(f"Acerca de {APP_NAME}")
