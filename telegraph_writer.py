@@ -317,11 +317,47 @@ def nodes_to_html(nodes):
     return "".join(parts)
 
 
-def render_preview(title, text):
-    """HTML de la vista previa: el Markdown se convierte en los mismos nodos
+# La vista previa solo contiene HTML propio: se bloquean los scripts de la
+# página y solo se permiten imágenes http(s) y los estilos en línea.
+PREVIEW_CSP = "default-src 'none'; img-src http: https:; style-src 'unsafe-inline'"
+
+
+# Publicar en verde y Actualizar en azul (paleta de joseflix-request, algo más
+# oscura para que el texto blanco mantenga contraste); Vista previa es neutra.
+ACTION_CSS = (
+    "button.publish-action{background-image:none;background-color:#1e8a58;color:#fff;}"
+    "button.publish-action:hover{background-color:#23a066;}"
+    "button.update-action{background-image:none;background-color:#1c71d8;color:#fff;}"
+    "button.update-action:hover{background-color:#3584e4;}"
+    "button.publish-action:disabled,button.update-action:disabled{opacity:.45;}"
+)
+
+
+def preview_body(title, text):
+    """Cuerpo de la vista previa: el Markdown se convierte en los mismos nodos
     que se publican, de modo que se ve igual que en Telegra.ph."""
-    title = html.escape(title)
-    return f"<!doctype html><html lang='es'><head><meta charset='utf-8'><title>{title}</title><style>{PREVIEW_STYLE}</style></head><body><h1>{title}</h1>{nodes_to_html(markdown_to_nodes(text))}</body></html>"
+    return f"<h1>{html.escape(title)}</h1>{nodes_to_html(markdown_to_nodes(text))}"
+
+
+def render_preview(title, text):
+    """Página HTML completa de la vista previa."""
+    return (
+        f"<!doctype html><html lang='es'><head><meta charset='utf-8'>"
+        f"<meta http-equiv='Content-Security-Policy' content=\"{PREVIEW_CSP}\">"
+        f"<title>{html.escape(title)}</title><style>{PREVIEW_STYLE}</style></head>"
+        f"<body>{preview_body(title, text)}</body></html>"
+    )
+
+
+def preview_update_script(title, text):
+    """JavaScript que sustituye el cuerpo de una vista previa ya cargada; así
+    el panel se actualiza sin perder la posición de desplazamiento."""
+    return f"document.title={json.dumps(title)};document.body.innerHTML={json.dumps(preview_body(title, text))};"
+
+
+def webkit_available():
+    """WebKitGTK 6.0 instalado (se comprueba sin cargarlo)."""
+    return "6.0" in gi.Repository.get_default().enumerate_versions("WebKit")
 
 
 def count_text(count):
@@ -350,6 +386,10 @@ class TelegraphWriter(Gtk.Application):
         self.presented = False
         self.pages = []
         self.preview_file = None
+        self.preview_view = None  # WebView del panel: se crea al abrirlo por primera vez
+        self.preview_visible = False
+        self.preview_ready = False
+        self.preview_timer = None
         self.clean_state = None
         self.window = Gtk.ApplicationWindow(application=app, title=APP_NAME)
         self.window.set_default_size(1250, 800)
@@ -357,9 +397,13 @@ class TelegraphWriter(Gtk.Application):
         self.current_file = None
         self.current_path = None
         self.current_url = None
+        css = Gtk.CssProvider()
+        css.load_from_string(ACTION_CSS)
+        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.build_ui()
         self.mark_clean()
         self.restore_pending_session()
+        self.update_action_buttons()
         if saved_theme is not None:
             self.set_theme(bool(saved_theme))
         self.load_pages()
@@ -411,6 +455,7 @@ class TelegraphWriter(Gtk.Application):
             "current_file": self.current_file,
             "current_path": self.current_path,
             "current_url": self.current_url,
+            "preview": self.preview_visible,
         }
 
     def restore_pending_session(self):
@@ -428,6 +473,8 @@ class TelegraphWriter(Gtk.Application):
         self.current_url = pending.get("current_url")
         if not pending.get("dirty", True):
             self.mark_clean()
+        if pending.get("preview"):
+            self.preview_button.set_active(True)
         write_config(config)
 
     def read_config(self):
@@ -502,9 +549,10 @@ class TelegraphWriter(Gtk.Application):
         self.title_entry.set_text(article.get("title", ""))
         self.editor.get_buffer().set_text(content_to_text(article.get("content", [])))
         self.mark_clean()
+        self.update_action_buttons()
         self.statusbar.set_text("Artículo cargado")
 
-    def preview(self):
+    def preview_in_browser(self):
         if self.preview_file:
             self.preview_file.unlink(missing_ok=True)
         with tempfile.NamedTemporaryFile("w", prefix="telegraph_writer_preview_", suffix=".html", delete=False, encoding="utf-8") as handle:
@@ -512,6 +560,84 @@ class TelegraphWriter(Gtk.Application):
         self.preview_file = Path(handle.name)
         webbrowser.open(self.preview_file.as_uri())
         self.statusbar.set_text("Vista previa abierta en el navegador")
+
+    def create_preview_view(self):
+        """Crea el WebView del panel (WebKit consume memoria, así que solo se
+        carga al abrir la vista previa por primera vez). Devuelve False si
+        WebKit no se puede cargar."""
+        try:
+            gi.require_version("WebKit", "6.0")
+            from gi.repository import WebKit
+        except (ValueError, ImportError):
+            return False
+        self.WebKit = WebKit
+        # Sesión efímera: la vista previa no guarda cookies ni caché en disco.
+        self.preview_view = WebKit.WebView(network_session=WebKit.NetworkSession.new_ephemeral(), hexpand=True, vexpand=True)
+        self.preview_view.connect("decide-policy", self.on_preview_policy)
+        self.preview_view.connect("load-changed", lambda _view, event: setattr(self, "preview_ready", True) if event == WebKit.LoadEvent.FINISHED else None)
+        frame = Gtk.Frame(child=self.preview_view)
+        frame.set_margin_start(8); frame.set_margin_end(12); frame.set_margin_top(12); frame.set_margin_bottom(12)
+        self.preview_frame = frame
+        return True
+
+    def on_preview_policy(self, _view, decision, decision_type):
+        # Los enlaces de la vista previa se abren en el navegador; el panel
+        # solo muestra el artículo.
+        if decision_type == self.WebKit.PolicyDecisionType.NAVIGATION_ACTION:
+            action = decision.get_navigation_action()
+            if action.get_navigation_type() == self.WebKit.NavigationType.LINK_CLICKED:
+                webbrowser.open(action.get_request().get_uri())
+                decision.ignore()
+                return True
+        return False
+
+    def set_preview_visible(self, visible):
+        if visible == self.preview_visible:
+            return
+        if visible:
+            if self.preview_view is None and not self.create_preview_view():
+                self.preview_button.set_active(False)
+                self.preview_in_browser()
+                return
+            self.preview_paned.set_end_child(self.preview_frame)
+            self.preview_paned.set_position(max(320, (self.preview_paned.get_width() or 940) // 2))
+            self.preview_visible = True
+            self.preview_ready = False
+            self.refresh_preview()
+        else:
+            self.preview_visible = False
+            if self.preview_timer:
+                GLib.source_remove(self.preview_timer)
+                self.preview_timer = None
+            self.preview_paned.set_end_child(None)
+
+    def refresh_preview(self):
+        if not self.preview_visible:
+            return
+        title, text = self.editor_state()
+        if self.preview_ready:
+            self.preview_view.evaluate_javascript(preview_update_script(title, text), -1, None, None, None, None, None)
+        else:
+            self.preview_view.load_html(render_preview(title, text), "https://telegra.ph/")
+
+    def schedule_preview(self):
+        """Refresca el panel poco después de la última pulsación de tecla."""
+        if not self.preview_visible:
+            return
+        if self.preview_timer:
+            GLib.source_remove(self.preview_timer)
+        self.preview_timer = GLib.timeout_add(250, self.run_preview_refresh)
+
+    def run_preview_refresh(self):
+        self.preview_timer = None
+        self.refresh_preview()
+        return False
+
+    def update_action_buttons(self):
+        """Actualizar solo tiene sentido con un artículo ya publicado."""
+        published = bool(self.current_path)
+        self.update_button.set_sensitive(published)
+        self.update_button.set_tooltip_text("Aplica los cambios al artículo publicado" if published else "Publica primero el artículo para poder actualizarlo")
 
     def new_article(self):
         self.confirm_discard(self.reset_editor)
@@ -521,6 +647,7 @@ class TelegraphWriter(Gtk.Application):
         self.title_entry.set_text("")
         self.editor.get_buffer().set_text("")
         self.mark_clean()
+        self.update_action_buttons()
         self.statusbar.set_text("Nuevo artículo")
 
     def publish(self):
@@ -545,6 +672,7 @@ class TelegraphWriter(Gtk.Application):
         self.current_path = page.get("path")
         self.current_url = page.get("url")
         self.mark_clean()
+        self.update_action_buttons()
         if self.current_file:
             self.write_draft(self.current_file)
         self.statusbar.set_text("Artículo publicado correctamente")
@@ -662,6 +790,7 @@ class TelegraphWriter(Gtk.Application):
         self.title_entry.set_text(metadata.get("title", path.stem))
         self.editor.get_buffer().set_text(text)
         self.mark_clean()
+        self.update_action_buttons()
         self.statusbar.set_text(f"Abierto: {path.name}")
 
     def settings(self):
@@ -733,7 +862,13 @@ class TelegraphWriter(Gtk.Application):
         paned.set_position(310)
         paned.set_vexpand(True)
         paned.set_start_child(self.build_sidebar())
-        paned.set_end_child(self.build_editor())
+        # El panel de vista previa se añade como hijo final de este Paned solo
+        # mientras está abierto; cerrado, el editor ocupa todo el ancho.
+        self.preview_paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+        self.preview_paned.set_wide_handle(True)
+        self.preview_paned.set_start_child(self.build_editor())
+        self.preview_paned.set_resize_end_child(True)
+        paned.set_end_child(self.preview_paned)
         root.append(paned)
 
         self.statusbar = Gtk.Label(label="", xalign=1)
@@ -863,16 +998,30 @@ class TelegraphWriter(Gtk.Application):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         box.set_margin_start(8); box.set_margin_end(12); box.set_margin_top(12); box.set_margin_bottom(12)
         self.title_entry = Gtk.Entry(placeholder_text="Título del artículo")
+        self.title_entry.connect("changed", lambda _: self.schedule_preview())
         box.append(self.title_entry)
         editor = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR)
         self.editor = editor
+        editor.get_buffer().connect("changed", lambda _: self.schedule_preview())
         editor.set_vexpand(True); editor.set_top_margin(8); editor.set_left_margin(8)
         scroll = Gtk.ScrolledWindow(); scroll.set_child(editor); scroll.set_vexpand(True)
         box.append(scroll)
         actions = Gtk.Box(spacing=8); actions.set_halign(Gtk.Align.END)
-        for label, callback in (("Vista previa", self.preview), ("Publicar", self.publish), ("Actualizar", self.update_article)):
-            button = Gtk.Button(label=label)
-            button.connect("clicked", lambda _, fn=callback: fn())
+        if webkit_available():
+            self.preview_button = Gtk.ToggleButton(label="Vista previa")
+            self.preview_button.set_tooltip_text("Muestra u oculta la vista previa junto al editor")
+            self.preview_button.connect("toggled", lambda button: self.set_preview_visible(button.get_active()))
+        else:
+            self.preview_button = Gtk.Button(label="Vista previa")
+            self.preview_button.set_tooltip_text("Abre la vista previa en el navegador")
+            self.preview_button.connect("clicked", lambda _: self.preview_in_browser())
+        publish_button = Gtk.Button(label="Publicar")
+        publish_button.add_css_class("publish-action")
+        publish_button.connect("clicked", lambda _: self.publish())
+        self.update_button = Gtk.Button(label="Actualizar")
+        self.update_button.add_css_class("update-action")
+        self.update_button.connect("clicked", lambda _: self.update_article())
+        for button in (self.preview_button, publish_button, self.update_button):
             actions.append(button)
         box.append(actions)
         return box

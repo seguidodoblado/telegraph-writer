@@ -1,3 +1,11 @@
+telegraph-writer (2.5.0-1ubuntu1) noble; urgency=medium
+
+  * The preview opens in a WebKit side panel that updates while typing;
+    Publish and Update buttons are coloured and Update is disabled until
+    the article is published
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Sun, 27 Sep 2026 00:57:35 +0200
+
 telegraph-writer (2.4.3-1ubuntu1) noble; urgency=medium
 
   * Loading an article from Telegra.ph separates the blocks with a blank

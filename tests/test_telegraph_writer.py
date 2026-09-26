@@ -7,6 +7,7 @@ import os
 import stat
 import sys
 import tempfile
+import json
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -74,6 +75,30 @@ class ContentToTextTests(unittest.TestCase):
         nodes = tw.markdown_to_nodes(markdown)
         self.assertEqual(tw.content_to_text(nodes), markdown)
         self.assertEqual(tw.markdown_to_nodes(tw.content_to_text(nodes)), nodes)
+
+
+class PreviewPanelTests(unittest.TestCase):
+    def test_full_page_wraps_the_body_and_blocks_scripts(self):
+        page = tw.render_preview("T", "Hola")
+        self.assertIn(tw.preview_body("T", "Hola"), page)
+        self.assertIn(f"Content-Security-Policy' content=\"{tw.PREVIEW_CSP}\"", page)
+        self.assertIn("default-src 'none'", tw.PREVIEW_CSP)
+        self.assertNotIn("script-src", tw.PREVIEW_CSP)
+        self.assertNotIn("<script", page)
+
+    def test_update_script_replaces_body_with_escaped_json(self):
+        script = tw.preview_update_script('Un "título"', "**a** <b>")
+        self.assertTrue(script.startswith("document.title="))
+        self.assertIn("document.body.innerHTML=", script)
+        self.assertIn("&lt;b&gt;", script)
+        self.assertNotIn("<b>", script)
+        self.assertEqual(script.count("\n"), 0)
+
+    def test_update_script_is_valid_javascript_string_literals(self):
+        script = tw.preview_update_script("ñ\u2028", "línea\nsalto")
+        title, body = script.split(";document.body.innerHTML=")
+        self.assertEqual(json.loads(title[len("document.title="):]), "ñ\u2028")
+        self.assertIn("línea", json.loads(body.rstrip(";")))
 
 
 class BlankLineTests(unittest.TestCase):

@@ -39,7 +39,8 @@ Version: $version
 Section: editors
 Priority: optional
 Architecture: all
-Depends: python3, python3-gi, gir1.2-gtk-4.0 (>= 4.10)
+Depends: python3, python3-gi, gir1.2-gtk-4.0 (>= 4.12)
+Recommends: gir1.2-webkit-6.0
 Maintainer: seguidodoblado <jose.antonio.seguido@gmail.com>
 Description: Cliente de escritorio para Telegra.ph
  Editor Markdown para crear, publicar y actualizar artículos de Telegra.ph.
