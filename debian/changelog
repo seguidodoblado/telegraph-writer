@@ -1,3 +1,10 @@
+telegraph-writer (2.4.2-1ubuntu1) noble; urgency=medium
+
+  * Dark theme uses monochrome symbolic icons (light theme keeps the
+    colour ones); the preview renders the Markdown as Telegra.ph
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Sat, 26 Sep 2026 22:33:33 +0200
+
 telegraph-writer (2.4.1-1) noble; urgency=medium
 
   * The preview renders the Markdown as Telegra.ph

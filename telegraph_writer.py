@@ -16,7 +16,7 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Gio, GLib
+from gi.repository import Gtk, Gdk, Gio, GLib
 
 # GTK deriva el WM_CLASS de la ventana del prgname (por defecto el nombre del
 # .py); se fija para que coincida con StartupWMClass del .desktop y Cinnamon
@@ -138,6 +138,29 @@ def theme_variant(name, dark):
     if parts[0] == "Mint" and len(parts) >= 2:
         return f"{parts[0]}-{parts[1]}-Dark" + (f"-{parts[2]}" if len(parts) > 2 else "")
     return base + "-dark"
+
+
+def is_dark_theme(name):
+    """Indica si un tema GTK corresponde a una variante oscura."""
+    return bool(name and "-dark" in name.lower())
+
+
+# Iconos de color que Mint-Y-Yaru no tiene en versión simbólica: en oscuro se
+# sustituyen por un equivalente que sí la tenga.
+SYMBOLIC_ALTERNATIVES = {
+    "applications-internet": "network-workgroup",
+    "preferences-desktop-theme": "preferences-desktop-appearance",
+}
+
+
+def icon_variant(name, dark, has_icon):
+    """En oscuro prefiere la variante simbólica (monocroma) del icono, o la de
+    su alternativa, si el tema la tiene; en claro deja el icono de color."""
+    if dark:
+        for base in (name, SYMBOLIC_ALTERNATIVES.get(name)):
+            if base and has_icon(base + "-symbolic"):
+                return base + "-symbolic"
+    return name
 
 
 def markdown_to_nodes(markdown):
@@ -316,6 +339,10 @@ class TelegraphWriter(Gtk.Application):
         # Mint-Y-Orange); se captura antes de tocar la propiedad para poder
         # derivar la variante oscura sin perder el acento del usuario.
         self.system_theme = Gtk.Settings.get_default().get_property("gtk-theme-name")
+        # Los iconos se eligen al construir la interfaz, así que el modo oscuro
+        # (preferencia guardada o, si no hay, el del sistema) se decide antes.
+        saved_theme = self.read_config().get("dark_mode")
+        self.dark = bool(saved_theme) if saved_theme is not None else is_dark_theme(self.system_theme)
         self.presented = False
         self.pages = []
         self.preview_file = None
@@ -329,7 +356,6 @@ class TelegraphWriter(Gtk.Application):
         self.build_ui()
         self.mark_clean()
         self.restore_pending_session()
-        saved_theme = self.read_config().get("dark_mode")
         if saved_theme is not None:
             self.set_theme(bool(saved_theme))
         self.load_pages()
@@ -415,7 +441,7 @@ class TelegraphWriter(Gtk.Application):
         dialog.set_title(title)
         # GTK4 ya no expone set_message_type(); el icono se añade al área
         # del mensaje para conservar la indicación visual de advertencia.
-        warning_icon = Gtk.Image.new_from_icon_name("dialog-warning")
+        warning_icon = self.icon("dialog-warning")
         warning_icon.set_pixel_size(40)
         message_area = dialog.get_message_area()
         message_area.prepend(warning_icon)
@@ -713,6 +739,10 @@ class TelegraphWriter(Gtk.Application):
         self.statusbar.set_margin_bottom(4)
         root.append(self.statusbar)
 
+    def icon(self, name):
+        theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        return Gtk.Image.new_from_icon_name(icon_variant(name, self.dark, theme.has_icon))
+
     def build_menubar(self):
         bar = Gtk.Box(spacing=12)
         bar.set_margin_start(12); bar.set_margin_end(12)
@@ -739,7 +769,7 @@ class TelegraphWriter(Gtk.Application):
         for label, icon_name, items in menus:
             button = Gtk.MenuButton()
             content = Gtk.Box(spacing=6)
-            content.append(Gtk.Image.new_from_icon_name(icon_name))
+            content.append(self.icon(icon_name))
             content.append(Gtk.Label(label=label))
             button.set_child(content)
             self.menu_popover(button, items)
@@ -753,7 +783,7 @@ class TelegraphWriter(Gtk.Application):
         for label, icon_name, callback in items:
             item = Gtk.Button()
             content = Gtk.Box(spacing=8)
-            content.append(Gtk.Image.new_from_icon_name(icon_name))
+            content.append(self.icon(icon_name))
             content.append(Gtk.Label(label=label, xalign=0))
             item.set_child(content); item.set_halign(Gtk.Align.FILL)
             item.connect("clicked", lambda _, fn=callback: (popover.popdown(), fn()))
@@ -775,7 +805,7 @@ class TelegraphWriter(Gtk.Application):
             button = Gtk.Button()
             button.set_tooltip_text(label)
             content = Gtk.Box(spacing=6)
-            icon = Gtk.Image.new_from_icon_name(icon_name)
+            icon = self.icon(icon_name)
             icon.set_pixel_size(16)
             content.append(icon)
             content.append(Gtk.Label(label=label))

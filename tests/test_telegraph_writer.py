@@ -92,6 +92,29 @@ class ThemeVariantTests(unittest.TestCase):
         self.assertEqual(tw.theme_variant("Yaru-blue-dark", False), "Yaru-blue")
 
 
+class IconVariantTests(unittest.TestCase):
+    def test_dark_prefers_symbolic_when_available(self):
+        self.assertEqual(tw.icon_variant("document-open", True, lambda n: True), "document-open-symbolic")
+
+    def test_dark_falls_back_when_no_symbolic(self):
+        self.assertEqual(tw.icon_variant("applications-internet", True, lambda n: False), "applications-internet")
+
+    def test_dark_uses_symbolic_alternative(self):
+        available = {"network-workgroup-symbolic"}
+        self.assertEqual(tw.icon_variant("applications-internet", True, available.__contains__), "network-workgroup-symbolic")
+
+    def test_light_keeps_current_icon(self):
+        self.assertEqual(tw.icon_variant("document-open", False, lambda n: True), "document-open")
+
+    def test_is_dark_theme(self):
+        self.assertTrue(tw.is_dark_theme("Mint-Y-Dark-Orange"))
+        self.assertTrue(tw.is_dark_theme("Adwaita-dark"))
+        self.assertFalse(tw.is_dark_theme("Mint-Y-Orange"))
+        self.assertFalse(tw.is_dark_theme("Adwaita"))
+        self.assertFalse(tw.is_dark_theme(""))
+        self.assertFalse(tw.is_dark_theme(None))
+
+
 class PreviewTests(unittest.TestCase):
     def test_markdown_is_rendered(self):
         page = tw.render_preview("t", "# Uno\nTexto **negrita** y *cursiva*\n- a\n- b\n> cita\n---")
