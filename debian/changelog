@@ -1,3 +1,10 @@
+telegraph-writer (2.5.1-1ubuntu1) noble; urgency=medium
+
+  * About dialog uses the standard GNOME About window, like Comic
+    Identify
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Sun, 27 Sep 2026 01:09:41 +0200
+
 telegraph-writer (2.5.0-1ubuntu1) noble; urgency=medium
 
   * The preview opens in a WebKit side panel that updates while typing;

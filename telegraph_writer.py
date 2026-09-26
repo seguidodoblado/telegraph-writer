@@ -30,6 +30,10 @@ try:
     APP_VERSION = VERSION_FILE.read_text(encoding="utf-8").strip() if VERSION_FILE.exists() else re.search(r"\(([^)]+)\)", CHANGELOG_FILE.read_text(encoding="utf-8")).group(1)
 except (FileNotFoundError, AttributeError):
     APP_VERSION = "0.0.0"
+AUTHOR = "Jose Antonio Seguido Doblado"
+REPO_URL = "https://github.com/seguidodoblado/telegraph-writer"
+LICENSE_TEXT = ("Este programa es software libre: se distribuye bajo la GNU General Public License, versión 3. "
+                "El texto completo está en el archivo LICENSE del repositorio y en https://www.gnu.org/licenses/gpl-3.0.html.")
 CONFIG_FILE = Path.home() / ".config" / "telegraph-writer" / "config.json"
 DRAFT_DIR = Path.home() / "Telegra.ph"
 API_URL = "https://api.telegra.ph"
@@ -1047,29 +1051,22 @@ class TelegraphWriter(Gtk.Application):
         self.statusbar.set_text("Tema oscuro aplicado" if dark else "Tema claro aplicado")
 
     def about(self):
-        dialog = Gtk.Dialog(transient_for=self.window, modal=True)
-        dialog.set_title(f"Acerca de {APP_NAME}")
-        dialog.set_default_size(380, 500)
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        box.set_margin_start(24); box.set_margin_end(24); box.set_margin_top(24); box.set_margin_bottom(18)
-        icon_path = Path(__file__).resolve().parent / "telegraph-writer.svg"
-        icon = Gtk.Image.new_from_file(str(icon_path)); icon.set_pixel_size(112); icon.set_halign(Gtk.Align.CENTER); box.append(icon)
-        title = Gtk.Label(); title.set_markup(f"<big><b>{APP_NAME}</b></big>"); box.append(title)
-        details = Gtk.Label()
-        details.set_markup(
-            f"Versión {APP_VERSION}\n\n"
-            "Cliente de escritorio para Telegra.ph.\n\n"
-            "<b>Desarrollador:</b>\n"
-            "seguidodoblado\n"
-            "jose.antonio.seguido@gmail.com\n\n"
-            "<b>Dependencia:</b>\n"
-            "PyGObject · GTK4"
-        )
-        details.set_justify(Gtk.Justification.CENTER)
-        details.set_wrap(True)
-        box.append(details)
-        close = Gtk.Button(label="Cerrar"); close.set_halign(Gtk.Align.END); close.connect("clicked", lambda *_: dialog.close()); box.append(close)
-        dialog.set_child(box); dialog.present()
+        about = Gtk.AboutDialog(
+            transient_for=self.window, modal=True, program_name=APP_NAME, version=APP_VERSION,
+            authors=[AUTHOR], copyright=f"© 2026 {AUTHOR}",
+            comments="Cliente de escritorio para Telegra.ph: editor Markdown para crear, publicar y actualizar artículos.",
+            website=REPO_URL, website_label="github.com/seguidodoblado/telegraph-writer",
+            license_type=Gtk.License.CUSTOM, license=LICENSE_TEXT, wrap_license=True)
+        # Instalado, el icono está en el tema (hicolor); desde el código fuente
+        # se carga el SVG del repositorio.
+        if Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).has_icon("telegraph-writer"):
+            about.set_logo_icon_name("telegraph-writer")
+        else:
+            about.set_logo(Gdk.Texture.new_from_filename(str(Path(__file__).resolve().parent / "telegraph-writer.svg")))
+        about.add_credit_section("Servicios de terceros", [
+            "Telegra.ph https://telegra.ph/",
+            "Catbox (subida de imágenes) https://catbox.moe/"])
+        about.present()
 
 
 if __name__ == "__main__":
