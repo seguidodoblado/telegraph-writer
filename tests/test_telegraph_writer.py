@@ -55,7 +55,7 @@ class ContentToTextTests(unittest.TestCase):
 
     def test_headings_keep_their_level(self):
         nodes = [{"tag": "h3", "children": ["A"]}, {"tag": "h4", "children": ["B"]}]
-        self.assertEqual(tw.content_to_text(nodes), "# A\n## B")
+        self.assertEqual(tw.content_to_text(nodes), "# A\n\n## B")
 
     def test_blockquote_and_lists(self):
         nodes = [
@@ -63,16 +63,34 @@ class ContentToTextTests(unittest.TestCase):
             {"tag": "ul", "children": [{"tag": "li", "children": ["a"]}, {"tag": "li", "children": ["b"]}]},
             {"tag": "ol", "children": [{"tag": "li", "children": ["c"]}]},
         ]
-        self.assertEqual(tw.content_to_text(nodes), "> cita\n- a\n- b\n1. c")
+        self.assertEqual(tw.content_to_text(nodes), "> cita\n\n- a\n- b\n\n1. c")
 
     def test_figure_with_image(self):
         nodes = [{"tag": "figure", "children": [{"tag": "img", "attrs": {"src": "/file/a.jpg"}}]}]
         self.assertEqual(tw.content_to_text(nodes), "![](/file/a.jpg)")
 
     def test_round_trip_preserves_structure(self):
-        markdown = "# Titulo\n## Sub\nTexto con **negrita**, *cursiva* y [enlace](http://x).\n> cita\n- a\n- b\n1. uno\n---\n```\ncodigo\n```\n![](http://i/a.png)"
+        markdown = "# Titulo\n\n## Sub\n\nTexto con **negrita**, *cursiva* y [enlace](http://x).\n\n> cita\n\n- a\n- b\n\n1. uno\n\n---\n\n```\ncodigo\n```\n\n![](http://i/a.png)"
         nodes = tw.markdown_to_nodes(markdown)
         self.assertEqual(tw.content_to_text(nodes), markdown)
+        self.assertEqual(tw.markdown_to_nodes(tw.content_to_text(nodes)), nodes)
+
+
+class BlankLineTests(unittest.TestCase):
+    def test_blocks_are_separated_by_a_blank_line(self):
+        nodes = tw.markdown_to_nodes("Uno\nDos\n- a\n- b")
+        self.assertEqual(tw.content_to_text(nodes), "Uno\n\nDos\n\n- a\n- b")
+
+    def test_extra_blank_lines_are_not_published_and_reload_is_stable(self):
+        nodes = tw.markdown_to_nodes("Uno\n\n\n\nDos")
+        self.assertEqual(nodes, tw.markdown_to_nodes("Uno\nDos"))
+        text = tw.content_to_text(nodes)
+        self.assertEqual(text, "Uno\n\nDos")
+        self.assertEqual(tw.markdown_to_nodes(text), nodes)
+
+    def test_code_block_keeps_its_own_blank_lines(self):
+        nodes = tw.markdown_to_nodes("```\na\n\nb\n```\nfin")
+        self.assertEqual(tw.content_to_text(nodes), "```\na\n\nb\n```\n\nfin")
         self.assertEqual(tw.markdown_to_nodes(tw.content_to_text(nodes)), nodes)
 
 

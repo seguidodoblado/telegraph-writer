@@ -243,36 +243,40 @@ def inline_to_text(nodes):
 
 def content_to_text(nodes):
     """Reconstruye un borrador Markdown a partir del contenido de un artículo:
-    cada nodo de bloque genera una línea y el formato en línea se conserva."""
-    lines = []
+    cada nodo de bloque genera un bloque separado por una línea en blanco (las
+    listas, citas y códigos mantienen sus líneas juntas) y el formato en línea
+    se conserva. Telegra.ph no guarda las líneas en blanco del original."""
+    blocks = []
     for node in nodes:
         if isinstance(node, str):
             if node.strip():
-                lines.append(node.strip())
+                blocks.append(node.strip())
             continue
         tag = node.get("tag", "")
         children = node.get("children", [])
         if tag == "h3":
-            lines.append(f"# {inline_to_text(children)}")
+            blocks.append(f"# {inline_to_text(children)}")
         elif tag == "h4":
-            lines.append(f"## {inline_to_text(children)}")
+            blocks.append(f"## {inline_to_text(children)}")
         elif tag == "blockquote":
-            lines.extend(f"> {line}" for line in content_to_text(children).split("\n") if line)
+            blocks.append("\n".join(f"> {line}" for line in content_to_text(children).split("\n") if line))
         elif tag in ("ul", "ol"):
+            items = []
             for number, item in enumerate(children, 1):
                 content = inline_to_text(item.get("children", [])) if isinstance(item, dict) else item
-                lines.append(f"{number}. {content}" if tag == "ol" else f"- {content}")
+                items.append(f"{number}. {content}" if tag == "ol" else f"- {content}")
+            blocks.append("\n".join(items))
         elif tag == "pre":
-            lines.extend(["```", plain_text(children), "```"])
+            blocks.append("\n".join(["```", plain_text(children), "```"]))
         elif tag == "hr":
-            lines.append("---")
+            blocks.append("---")
         elif tag == "figure":
-            lines.append(content_to_text(children))
+            blocks.append(content_to_text(children))
         else:
             text = inline_to_text([node])
             if text.strip():
-                lines.append(text)
-    return "\n".join(lines)
+                blocks.append(text)
+    return "\n\n".join(blocks)
 
 
 VOID_TAGS = {"br", "hr", "img"}

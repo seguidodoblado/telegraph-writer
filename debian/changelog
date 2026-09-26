@@ -1,3 +1,10 @@
+telegraph-writer (2.4.3-1ubuntu1) noble; urgency=medium
+
+  * Loading an article from Telegra.ph separates the blocks with a blank
+    line in the editor
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Sun, 27 Sep 2026 00:04:35 +0200
+
 telegraph-writer (2.4.2-1ubuntu1) noble; urgency=medium
 
   * Dark theme uses monochrome symbolic icons (light theme keeps the
