@@ -2,7 +2,7 @@
 
 ## Documentación
 
-Empieza por el [wiki](https://github.com/seguidodoblado/telegraph-writer/wiki): [instalación](https://github.com/seguidodoblado/telegraph-writer/wiki/Installation), [uso](https://github.com/seguidodoblado/telegraph-writer/wiki/Usage), [empaquetado](https://github.com/seguidodoblado/telegraph-writer/wiki/Packaging) y [arquitectura](https://github.com/seguidodoblado/telegraph-writer/wiki/Architecture).
+Empieza por el [wiki](https://github.com/seguidodoblado/telegraph-writer/wiki): [instalación](https://github.com/seguidodoblado/telegraph-writer/wiki/es-01-4-instalacion-configuracion), [guía de uso](https://github.com/seguidodoblado/telegraph-writer/wiki/es-01-5-guia-uso) y [solución de problemas](https://github.com/seguidodoblado/telegraph-writer/wiki/es-01-7-solucion-problemas).
 
 ## Pedir ayuda
 
