@@ -27,6 +27,7 @@ no account beyond your own Telegra.ph access token.
 - **Upload images** to [Catbox](https://catbox.moe/) and insert them into the article automatically, since
   Telegra.ph has new uploads disabled.
 - **Light and dark mode**, with the matching system icons in each.
+- **Available in Spanish and English**, following the system's language (or `$LANGUAGE`).
 
 ## Documentation
 

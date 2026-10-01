@@ -1,3 +1,11 @@
+telegraph-writer (2.7.0-1ubuntu1) noble; urgency=medium
+
+  * Add gettext-based translations (Spanish source, English catalog);
+    the formatting toolbar, menus, dialogs and status messages are now
+    translatable
+
+ -- Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Fri, 02 Oct 2026 00:38:57 +0200
+
 telegraph-writer (2.6.0-1ubuntu1) noble; urgency=medium
 
   * Add a Markdown formatting toolbar above the editor (bold, italics,

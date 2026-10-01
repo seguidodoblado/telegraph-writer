@@ -5,3 +5,6 @@
 # Entornos virtuales y cachés locales
 __pycache__/
 *.py[cod]
+
+# Traducciones compiladas (se generan con i18n-compile.sh; el .po/.pot sí se versiona)
+i18n/*/LC_MESSAGES/*.mo

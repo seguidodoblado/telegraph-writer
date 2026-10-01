@@ -6,6 +6,8 @@ import os
 import json
 import html
 import re
+import gettext
+import locale
 import tempfile
 import webbrowser
 import urllib.parse
@@ -23,6 +25,32 @@ from gi.repository import Gtk, Gdk, Gio, GLib
 # asocie la ventana a su icono también tras reiniciar para cambiar de tema.
 GLib.set_prgname("telegraph-writer")
 
+# Traducciones (i18n): el idioma fuente del código es el español, así que no
+# hace falta ningún catálogo "es" — si no hay traducción cargada, gettext
+# devuelve el texto tal cual. Los catálogos compilados (.mo) viven junto al
+# script en i18n/<idioma>/LC_MESSAGES/telegraph-writer.mo; ver po/README.md.
+# Patrón e infraestructura portados de Bloguero (bloguero/src/bloguero/i18n/).
+I18N_DOMAIN = "telegraph-writer"
+I18N_DIR = Path(__file__).resolve().parent / "i18n"
+
+
+def install_i18n():
+    """Activa las traducciones según el idioma del sistema (o $LANGUAGE).
+    Se llama una sola vez, al arrancar, antes de construir cualquier texto."""
+    try:
+        locale.setlocale(locale.LC_ALL, "")
+    except locale.Error:
+        pass  # locale del sistema no instalado: se sigue en español
+    gettext.bindtextdomain(I18N_DOMAIN, str(I18N_DIR))
+
+
+def _(message):
+    return gettext.dgettext(I18N_DOMAIN, message)
+
+
+def ngettext(singular, plural, count):
+    return gettext.dngettext(I18N_DOMAIN, singular, plural, count)
+
 APP_NAME = "Telegraph Writer"
 CHANGELOG_FILE = Path(__file__).resolve().parent / "debian" / "changelog"
 try:
@@ -32,8 +60,6 @@ except (FileNotFoundError, AttributeError):
     APP_VERSION = "0.0.0"
 AUTHOR = "Jose Antonio Seguido Doblado"
 REPO_URL = "https://github.com/seguidodoblado/telegraph-writer"
-LICENSE_TEXT = ("Este programa es software libre: se distribuye bajo la GNU General Public License, versión 3. "
-                "El texto completo está en el archivo LICENSE del repositorio y en https://www.gnu.org/licenses/gpl-3.0.html.")
 CONFIG_FILE = Path.home() / ".config" / "telegraph-writer" / "config.json"
 DRAFT_DIR = Path.home() / "Telegra.ph"
 API_URL = "https://api.telegra.ph"
@@ -58,7 +84,7 @@ def telegraph_api(method, params=None, path=None):
     with urllib.request.urlopen(request, timeout=30) as response:
         result = json.loads(response.read().decode("utf-8"))
     if not result.get("ok"):
-        raise RuntimeError(result.get("error", "Error desconocido de Telegra.ph"))
+        raise RuntimeError(result.get("error", _("Error desconocido de Telegra.ph")))
     return result["result"]
 
 
@@ -91,9 +117,9 @@ def upload_image(filename):
     """Sube una imagen a Catbox y devuelve su URL pública."""
     file_path = Path(filename)
     if file_path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".gif"}:
-        raise RuntimeError("Solo se admiten imágenes JPG, JPEG, PNG o GIF.")
+        raise RuntimeError(_("Solo se admiten imágenes JPG, JPEG, PNG o GIF."))
     if file_path.stat().st_size > 200 * 1024 * 1024:
-        raise RuntimeError("La imagen supera el límite de 200 MB.")
+        raise RuntimeError(_("La imagen supera el límite de 200 MB."))
     boundary = f"----TelegraphWriter{uuid.uuid4().hex}"
     content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
     body = (
@@ -108,7 +134,8 @@ def upload_image(filename):
     with urllib.request.urlopen(request, timeout=60) as response:
         result = response.read().decode().strip()
     if not result.startswith(("http://", "https://")):
-        raise RuntimeError(f"Catbox rechazó la imagen: {result or 'respuesta vacía'}")
+        body = result or _("respuesta vacía")
+        raise RuntimeError(_("Catbox rechazó la imagen: {body}").format(body=body))
     return result
 
 
@@ -376,7 +403,7 @@ def webkit_available():
 
 
 def count_text(count):
-    return f"{count} artículo" if count == 1 else f"{count} artículos"
+    return ngettext("{count} artículo", "{count} artículos", count).format(count=count)
 
 
 # Barra de formato Markdown para el editor, portada de Bloguero
@@ -401,16 +428,16 @@ def build_markdown_toolbar(text_view):
     # icon_variant(): se ven igual en los dos temas, como el resto de
     # controles «en línea» de GNOME.
     buttons = [
-        ("format-text-bold-symbolic", None, "Negrita (**texto**)", lambda: _toolbar_wrap_selection(text_view, "**", "**")),
-        ("format-text-italic-symbolic", None, "Cursiva (*texto*)", lambda: _toolbar_wrap_selection(text_view, "*", "*")),
-        ("format-text-strikethrough-symbolic", None, "Tachado (~~texto~~)", lambda: _toolbar_wrap_selection(text_view, "~~", "~~")),
-        ("format-text-underline-symbolic", None, "Subrayado (__texto__)", lambda: _toolbar_wrap_selection(text_view, "__", "__")),
-        (None, "H", "Título: alterna H1 (#), H2 (##) y texto normal", lambda: _toolbar_cycle_heading(text_view)),
-        ("view-list-bullet-symbolic", None, "Lista con viñetas", lambda: _toolbar_toggle_line_prefix(text_view, "- ")),
-        ("view-list-ordered-symbolic", None, "Lista numerada", lambda: _toolbar_apply_numbered_list(text_view)),
-        ("format-indent-more-symbolic", None, "Cita (> texto)", lambda: _toolbar_toggle_line_prefix(text_view, "> ")),
-        (None, "<>", "Código (`texto`)", lambda: _toolbar_wrap_selection(text_view, "`", "`")),
-        ("insert-link-symbolic", None, "Enlace ([texto](url))", lambda: _toolbar_apply_link(text_view)),
+        ("format-text-bold-symbolic", None, _("Negrita (**texto**)"), lambda: _toolbar_wrap_selection(text_view, "**", "**")),
+        ("format-text-italic-symbolic", None, _("Cursiva (*texto*)"), lambda: _toolbar_wrap_selection(text_view, "*", "*")),
+        ("format-text-strikethrough-symbolic", None, _("Tachado (~~texto~~)"), lambda: _toolbar_wrap_selection(text_view, "~~", "~~")),
+        ("format-text-underline-symbolic", None, _("Subrayado (__texto__)"), lambda: _toolbar_wrap_selection(text_view, "__", "__")),
+        (None, "H", _("Título: alterna H1 (#), H2 (##) y texto normal"), lambda: _toolbar_cycle_heading(text_view)),
+        ("view-list-bullet-symbolic", None, _("Lista con viñetas"), lambda: _toolbar_toggle_line_prefix(text_view, "- ")),
+        ("view-list-ordered-symbolic", None, _("Lista numerada"), lambda: _toolbar_apply_numbered_list(text_view)),
+        ("format-indent-more-symbolic", None, _("Cita (> texto)"), lambda: _toolbar_toggle_line_prefix(text_view, "> ")),
+        (None, "<>", _("Código (`texto`)"), lambda: _toolbar_wrap_selection(text_view, "`", "`")),
+        ("insert-link-symbolic", None, _("Enlace ([texto](url))"), lambda: _toolbar_apply_link(text_view)),
     ]
 
     for icon_name, label, tooltip, action in buttons:
@@ -549,7 +576,7 @@ def _toolbar_apply_link(text_view):
         url_start = start_off + len(text) + 3
     else:
         offset = buffer.get_iter_at_mark(buffer.get_insert()).get_offset()
-        placeholder = "texto del enlace"
+        placeholder = _("texto del enlace")
         buffer.insert(buffer.get_iter_at_offset(offset), f"[{placeholder}](url)")
         url_start = offset + len(placeholder) + 3
     buffer.end_user_action()
@@ -625,9 +652,9 @@ class TelegraphWriter(Gtk.Application):
             action()
             return
         dialog = Gtk.AlertDialog()
-        dialog.set_message("Hay cambios sin guardar.")
-        dialog.set_detail("Si continúas se perderán el título y el texto actuales.")
-        dialog.set_buttons(["Cancelar", "Descartar cambios"])
+        dialog.set_message(_("Hay cambios sin guardar."))
+        dialog.set_detail(_("Si continúas se perderán el título y el texto actuales."))
+        dialog.set_buttons([_("Cancelar"), _("Descartar cambios")])
         dialog.set_cancel_button(0)
         dialog.set_default_button(0)
 
@@ -700,30 +727,31 @@ class TelegraphWriter(Gtk.Application):
             self.pages = []
             self.filter_articles(self.search)
             self.connection_dot.set_markup(f'<span foreground="{COLOR_ERROR}">●</span>')
-            self.connection_label.set_text("Sin configurar")
-            self.account_label.set_text("Sin configurar")
+            self.connection_label.set_text(_("Sin configurar"))
+            self.account_label.set_text(_("Sin configurar"))
             self.article_count_label.set_text(count_text(0))
-            self.statusbar.set_text("Sin configurar · abre Ajustes para introducir el access token")
+            self.statusbar.set_text(_("Sin configurar · abre Ajustes para introducir el access token"))
             return
         try:
             self.pages, total = fetch_all_pages(token)
             self.filter_articles(self.search)
-            self.statusbar.set_text(f"{count_text(total)} cargados" if total != 1 else "1 artículo cargado")
+            loaded = ngettext("{count} artículo cargado", "{count} artículos cargados", total).format(count=total)
+            self.statusbar.set_text(loaded)
             self.connection_dot.set_markup(f'<span foreground="{COLOR_OK}">●</span>')
-            self.connection_label.set_text("Conectado")
+            self.connection_label.set_text(_("Conectado"))
             self.article_count_label.set_text(count_text(total))
             self.account_label.set_text(self.account_name(token))
         except Exception as error:
             self.connection_dot.set_markup(f'<span foreground="{COLOR_ERROR}">●</span>')
-            self.connection_label.set_text("Sin conexión")
-            self.statusbar.set_text(f"Error: {error}")
+            self.connection_label.set_text(_("Sin conexión"))
+            self.statusbar.set_text(_("Error: {error}").format(error=error))
 
     def account_name(self, token):
         try:
             account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name"])})
-            return account.get("short_name") or "Cuenta de Telegra.ph"
+            return account.get("short_name") or _("Cuenta de Telegra.ph")
         except Exception:
-            return "Cuenta de Telegra.ph"
+            return _("Cuenta de Telegra.ph")
 
     def load_article(self, _listbox, row):
         page = getattr(row, "page", None)
@@ -734,7 +762,7 @@ class TelegraphWriter(Gtk.Application):
         try:
             article = telegraph_api("getPage", {"access_token": self.access_token(), "return_content": "true"}, page["path"])
         except Exception as error:
-            self.statusbar.set_text(f"Error al cargar el artículo: {error}")
+            self.statusbar.set_text(_("Error al cargar el artículo: {error}").format(error=error))
             return
         # Un artículo remoto no está asociado a ningún borrador local: si se
         # conservara current_file, Guardar sobrescribiría el borrador anterior.
@@ -745,7 +773,7 @@ class TelegraphWriter(Gtk.Application):
         self.editor.get_buffer().set_text(content_to_text(article.get("content", [])))
         self.mark_clean()
         self.update_action_buttons()
-        self.statusbar.set_text("Artículo cargado")
+        self.statusbar.set_text(_("Artículo cargado"))
 
     def preview_in_browser(self):
         if self.preview_file:
@@ -754,7 +782,7 @@ class TelegraphWriter(Gtk.Application):
             handle.write(render_preview(self.title_entry.get_text(), self.editor_text()))
         self.preview_file = Path(handle.name)
         webbrowser.open(self.preview_file.as_uri())
-        self.statusbar.set_text("Vista previa abierta en el navegador")
+        self.statusbar.set_text(_("Vista previa abierta en el navegador"))
 
     def create_preview_view(self):
         """Crea el WebView del panel (WebKit consume memoria, así que solo se
@@ -832,7 +860,8 @@ class TelegraphWriter(Gtk.Application):
         """Actualizar solo tiene sentido con un artículo ya publicado."""
         published = bool(self.current_path)
         self.update_button.set_sensitive(published)
-        self.update_button.set_tooltip_text("Aplica los cambios al artículo publicado" if published else "Publica primero el artículo para poder actualizarlo")
+        tooltip = _("Aplica los cambios al artículo publicado") if published else _("Publica primero el artículo para poder actualizarlo")
+        self.update_button.set_tooltip_text(tooltip)
 
     def new_article(self):
         self.confirm_discard(self.reset_editor)
@@ -843,26 +872,26 @@ class TelegraphWriter(Gtk.Application):
         self.editor.get_buffer().set_text("")
         self.mark_clean()
         self.update_action_buttons()
-        self.statusbar.set_text("Nuevo artículo")
+        self.statusbar.set_text(_("Nuevo artículo"))
 
     def publish(self):
         # Un artículo cargado desde Telegra.ph no debe volver a publicarse:
         # eso crearía un duplicado aunque por alguna razón falte el path.
         if self.current_path or self.current_url:
-            self.show_message("Este artículo ya existe en Telegra.ph.\n\nUtiliza «Actualizar» para aplicar los cambios sin crear un duplicado.")
+            self.show_message(_("Este artículo ya existe en Telegra.ph.\n\nUtiliza «Actualizar» para aplicar los cambios sin crear un duplicado."))
             return
         title = self.title_entry.get_text().strip()
         if not title:
-            self.show_message("Escribe un título antes de publicar.")
+            self.show_message(_("Escribe un título antes de publicar."))
             return
         token = self.access_token()
         if not token:
-            self.statusbar.set_text("Configura el access token desde Ajustes")
+            self.statusbar.set_text(_("Configura el access token desde Ajustes"))
             return
         try:
             page = telegraph_api("createPage", {"access_token": token, "title": title, "content": json.dumps(markdown_to_nodes(self.editor_text()), ensure_ascii=False), "return_content": "false"})
         except Exception as error:
-            self.statusbar.set_text(f"Error al publicar: {error}")
+            self.statusbar.set_text(_("Error al publicar: {error}").format(error=error))
             return
         self.current_path = page.get("path")
         self.current_url = page.get("url")
@@ -870,41 +899,41 @@ class TelegraphWriter(Gtk.Application):
         self.update_action_buttons()
         if self.current_file:
             self.write_draft(self.current_file)
-        self.statusbar.set_text("Artículo publicado correctamente")
+        self.statusbar.set_text(_("Artículo publicado correctamente"))
         self.load_pages()
 
     def update_article(self):
         if not self.current_path:
-            self.show_message("Este artículo todavía no está publicado.\n\nUtiliza «Publicar» para crear el artículo en Telegra.ph.")
+            self.show_message(_("Este artículo todavía no está publicado.\n\nUtiliza «Publicar» para crear el artículo en Telegra.ph."))
             return
         title = self.title_entry.get_text().strip()
         if not title:
-            self.show_message("Escribe un título antes de actualizar.")
+            self.show_message(_("Escribe un título antes de actualizar."))
             return
         token = self.access_token()
         if not token:
-            self.statusbar.set_text("Configura el access token desde Ajustes")
+            self.statusbar.set_text(_("Configura el access token desde Ajustes"))
             return
         try:
             page = telegraph_api("editPage", {"access_token": token, "title": title, "content": json.dumps(markdown_to_nodes(self.editor_text()), ensure_ascii=False), "return_content": "false"}, self.current_path)
         except Exception as error:
-            self.statusbar.set_text(f"Error al actualizar: {error}")
+            self.statusbar.set_text(_("Error al actualizar: {error}").format(error=error))
             return
         self.current_url = page.get("url", self.current_url)
         self.mark_clean()
         if self.current_file:
             self.write_draft(self.current_file)
-        self.statusbar.set_text("Artículo actualizado correctamente")
+        self.statusbar.set_text(_("Artículo actualizado correctamente"))
         self.load_pages()
 
     def open_in_browser(self):
         if not self.current_url:
-            self.statusbar.set_text("El artículo todavía no tiene una URL pública")
+            self.statusbar.set_text(_("El artículo todavía no tiene una URL pública"))
             return
         webbrowser.open(self.current_url)
 
     def insert_image(self):
-        dialog = Gtk.FileDialog(title="Seleccionar imagen")
+        dialog = Gtk.FileDialog(title=_("Seleccionar imagen"))
         dialog.set_initial_folder(Gio.File.new_for_path(str(Path.home())))
         dialog.open(self.window, None, self.image_selected)
 
@@ -913,15 +942,16 @@ class TelegraphWriter(Gtk.Application):
             file_path = dialog.open_finish(result).get_path()
         except GLib.Error:
             return
-        self.statusbar.set_text("Subiendo imagen…")
+        self.statusbar.set_text(_("Subiendo imagen…"))
         try:
             url = upload_image(file_path)
             buffer = self.editor.get_buffer()
             buffer.insert_at_cursor(f"![]({url})")
-            self.statusbar.set_text("Imagen subida correctamente")
+            self.statusbar.set_text(_("Imagen subida correctamente"))
         except Exception as error:
-            self.show_message(f"No se pudo subir la imagen.\n\n{error}", "Error al insertar imagen")
-            self.statusbar.set_text("Error al subir la imagen")
+            message = _("No se pudo subir la imagen.\n\n{error}").format(error=error)
+            self.show_message(message, _("Error al insertar imagen"))
+            self.statusbar.set_text(_("Error al subir la imagen"))
 
     def save_file(self):
         if self.current_file:
@@ -930,9 +960,10 @@ class TelegraphWriter(Gtk.Application):
         try:
             self.draft_dir.mkdir(parents=True, exist_ok=True)
         except OSError as error:
-            self.show_message(f"No se pudo crear la carpeta de borradores.\n\n{error}\n\nElige otra en Ajustes → Elegir…")
+            message = _("No se pudo crear la carpeta de borradores.\n\n{error}\n\nElige otra en Ajustes → Elegir…").format(error=error)
+            self.show_message(message)
             return
-        dialog = Gtk.FileDialog(title="Guardar Markdown", initial_name="articulo.md")
+        dialog = Gtk.FileDialog(title=_("Guardar Markdown"), initial_name="articulo.md")
         dialog.set_initial_folder(Gio.File.new_for_path(str(self.draft_dir)))
         dialog.save(self.window, None, self.draft_saved)
 
@@ -951,14 +982,14 @@ class TelegraphWriter(Gtk.Application):
             path.write_text(self.editor_text(), encoding="utf-8")
             path.with_suffix(".telegraph.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
         except OSError as error:
-            self.show_message(f"No se pudo guardar el borrador.\n\n{error}")
+            self.show_message(_("No se pudo guardar el borrador.\n\n{error}").format(error=error))
             return False
         self.mark_clean()
-        self.statusbar.set_text(f"Guardado: {path.name}")
+        self.statusbar.set_text(_("Guardado: {name}").format(name=path.name))
         return True
 
     def open_file(self):
-        dialog = Gtk.FileDialog(title="Abrir Markdown")
+        dialog = Gtk.FileDialog(title=_("Abrir Markdown"))
         dialog.set_initial_folder(Gio.File.new_for_path(str(self.draft_dir)))
         dialog.open(self.window, None, self.file_opened)
 
@@ -975,7 +1006,7 @@ class TelegraphWriter(Gtk.Application):
             text = path.read_text(encoding="utf-8")
             metadata = json.loads(metadata_file.read_text(encoding="utf-8")) if metadata_file.exists() else {}
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-            self.show_message(f"No se pudo abrir el borrador.\n\n{error}")
+            self.show_message(_("No se pudo abrir el borrador.\n\n{error}").format(error=error))
             return
         if not isinstance(metadata, dict):
             metadata = {}
@@ -986,52 +1017,52 @@ class TelegraphWriter(Gtk.Application):
         self.editor.get_buffer().set_text(text)
         self.mark_clean()
         self.update_action_buttons()
-        self.statusbar.set_text(f"Abierto: {path.name}")
+        self.statusbar.set_text(_("Abierto: {name}").format(name=path.name))
 
     def settings(self):
         dialog = Gtk.Dialog(transient_for=self.window, modal=True)
-        dialog.set_title("Ajustes")
+        dialog.set_title(_("Ajustes"))
         dialog.set_default_size(520, 180)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         box.set_margin_start(16); box.set_margin_end(16); box.set_margin_top(16); box.set_margin_bottom(16)
-        entry = Gtk.Entry(); entry.set_placeholder_text("Access token de Telegra.ph")
+        entry = Gtk.Entry(); entry.set_placeholder_text(_("Access token de Telegra.ph"))
         entry.set_text(self.access_token()); box.append(entry)
         draft_entry = Gtk.Entry(); draft_entry.set_text(str(self.draft_dir)); draft_entry.set_hexpand(True)
-        draft_row = Gtk.Box(spacing=8); draft_row.append(Gtk.Label(label="Borradores:", xalign=0)); draft_row.append(draft_entry)
-        choose = Gtk.Button(label="Elegir…"); draft_row.append(choose); box.append(draft_row)
+        draft_row = Gtk.Box(spacing=8); draft_row.append(Gtk.Label(label=_("Borradores:"), xalign=0)); draft_row.append(draft_entry)
+        choose = Gtk.Button(label=_("Elegir…")); draft_row.append(choose); box.append(draft_row)
         feedback = Gtk.Label(xalign=0)
         box.append(feedback)
         buttons = Gtk.Box(spacing=8); buttons.set_halign(Gtk.Align.END)
-        cancel = Gtk.Button(label="Cancelar"); save = Gtk.Button(label="Guardar")
-        test = Gtk.Button(label="Comprobar conexión")
+        cancel = Gtk.Button(label=_("Cancelar")); save = Gtk.Button(label=_("Guardar"))
+        test = Gtk.Button(label=_("Comprobar conexión"))
         buttons.append(test); buttons.append(cancel); buttons.append(save); box.append(buttons); dialog.set_child(box)
-        cancel.connect("clicked", lambda *_: dialog.close())
+        cancel.connect("clicked", lambda *_args: dialog.close())
 
-        def choose_folder(*_):
-            chooser = Gtk.FileDialog(title="Elegir carpeta de borradores")
+        def choose_folder(*_args):
+            chooser = Gtk.FileDialog(title=_("Elegir carpeta de borradores"))
             chooser.select_folder(self.window, None, lambda d, result: self.folder_selected(d, result, draft_entry))
         choose.connect("clicked", choose_folder)
 
-        def test_connection(*_):
+        def test_connection(*_args):
             token = entry.get_text().strip()
             if not token:
-                feedback.set_text("Introduce un access token.")
+                feedback.set_text(_("Introduce un access token."))
                 return
             try:
                 account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name", "page_count"])})
-                feedback.set_text(f"Conectado: {account.get('short_name', '')} · {count_text(account.get('page_count', 0))}")
+                feedback.set_text(_("Conectado: {name} · {count}").format(name=account.get("short_name", ""), count=count_text(account.get("page_count", 0))))
             except Exception as error:
-                feedback.set_text(f"Error: {error}")
+                feedback.set_text(_("Error: {error}").format(error=error))
         test.connect("clicked", test_connection)
 
-        def save_config(*_):
+        def save_config(*_args):
             config = self.read_config()
             config["access_token"] = entry.get_text().strip()
             config["draft_dir"] = draft_entry.get_text().strip() or str(DRAFT_DIR)
             try:
                 write_config(config)
             except OSError as error:
-                feedback.set_text(f"No se pudo guardar la configuración: {error}")
+                feedback.set_text(_("No se pudo guardar la configuración: {error}").format(error=error))
                 return
             self.draft_dir = Path(config["draft_dir"]).expanduser()
             dialog.close()
@@ -1082,22 +1113,22 @@ class TelegraphWriter(Gtk.Application):
         bar.set_margin_start(12); bar.set_margin_end(12)
         bar.set_margin_top(5); bar.set_margin_bottom(5)
         menus = (
-            ("Archivo", "document-properties", (
-                ("Nuevo", "document-new", self.new_article),
-                ("Abrir", "document-open", self.open_file),
-                ("Guardar", "document-save", self.save_file),
+            (_("Archivo"), "document-properties", (
+                (_("Nuevo"), "document-new", self.new_article),
+                (_("Abrir"), "document-open", self.open_file),
+                (_("Guardar"), "document-save", self.save_file),
             )),
             ("Telegra.ph", "applications-internet", (
-                ("Publicar", "document-send", self.publish),
-                ("Actualizar", "view-refresh", self.update_article),
-                ("Abrir artículo en navegador", "web-browser", self.open_in_browser),
+                (_("Publicar"), "document-send", self.publish),
+                (_("Actualizar"), "view-refresh", self.update_article),
+                (_("Abrir artículo en navegador"), "web-browser", self.open_in_browser),
             )),
-            ("Tema", "preferences-desktop-theme", (
-                ("Claro", "weather-clear", lambda: self.set_theme(False)),
-                ("Oscuro", "weather-clear-night", lambda: self.set_theme(True)),
+            (_("Tema"), "preferences-desktop-theme", (
+                (_("Claro"), "weather-clear", lambda: self.set_theme(False)),
+                (_("Oscuro"), "weather-clear-night", lambda: self.set_theme(True)),
             )),
-            ("Ayuda", "help-browser", (
-                ("Acerca de", "help-about", self.about),
+            (_("Ayuda"), "help-browser", (
+                (_("Acerca de"), "help-about", self.about),
             )),
         )
         for label, icon_name, items in menus:
@@ -1120,7 +1151,7 @@ class TelegraphWriter(Gtk.Application):
             content.append(self.icon(icon_name))
             content.append(Gtk.Label(label=label, xalign=0))
             item.set_child(content); item.set_halign(Gtk.Align.FILL)
-            item.connect("clicked", lambda _, fn=callback: (popover.popdown(), fn()))
+            item.connect("clicked", lambda _btn, fn=callback: (popover.popdown(), fn()))
             box.append(item)
         popover.set_child(box); button.set_popover(popover)
 
@@ -1129,11 +1160,11 @@ class TelegraphWriter(Gtk.Application):
         bar.set_margin_start(8); bar.set_margin_end(8)
         bar.set_margin_bottom(6)
         buttons = (
-            ("Nuevo", "document-new", self.new_article),
-            ("Abrir", "document-open", self.open_file),
-            ("Guardar", "document-save", self.save_file),
-            ("Insertar imagen", "insert-image", self.insert_image),
-            ("Ajustes", "preferences-system", self.settings),
+            (_("Nuevo"), "document-new", self.new_article),
+            (_("Abrir"), "document-open", self.open_file),
+            (_("Guardar"), "document-save", self.save_file),
+            (_("Insertar imagen"), "insert-image", self.insert_image),
+            (_("Ajustes"), "preferences-system", self.settings),
         )
         for label, icon_name, callback in buttons:
             button = Gtk.Button()
@@ -1144,15 +1175,15 @@ class TelegraphWriter(Gtk.Application):
             content.append(icon)
             content.append(Gtk.Label(label=label))
             button.set_child(content)
-            button.connect("clicked", lambda _, fn=callback: fn())
+            button.connect("clicked", lambda _btn, fn=callback: fn())
             bar.append(button)
         return bar
 
     def build_sidebar(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         box.set_margin_start(12); box.set_margin_end(8); box.set_margin_top(12); box.set_margin_bottom(12)
-        box.append(Gtk.Label(label="MIS ARTÍCULOS", xalign=0))
-        self.search = Gtk.SearchEntry(placeholder_text="Buscar artículos…")
+        box.append(Gtk.Label(label=_("MIS ARTÍCULOS"), xalign=0))
+        self.search = Gtk.SearchEntry(placeholder_text=_("Buscar artículos…"))
         self.search.connect("search-changed", self.filter_articles)
         box.append(self.search)
         listbox = Gtk.ListBox()
@@ -1167,10 +1198,10 @@ class TelegraphWriter(Gtk.Application):
         connection = Gtk.Box(spacing=5)
         self.connection_dot = Gtk.Label()
         self.connection_dot.set_markup(f'<span foreground="{COLOR_ERROR}">●</span>')
-        self.connection_label = Gtk.Label(label="Sin configurar", xalign=0)
+        self.connection_label = Gtk.Label(label=_("Sin configurar"), xalign=0)
         connection.append(self.connection_dot); connection.append(self.connection_label)
         account.append(connection)
-        self.account_label = Gtk.Label(label="Sin configurar", xalign=0)
+        self.account_label = Gtk.Label(label=_("Sin configurar"), xalign=0)
         account.append(self.account_label)
         self.article_count_label = Gtk.Label(label=count_text(0), xalign=0)
         account.append(self.article_count_label)
@@ -1186,37 +1217,40 @@ class TelegraphWriter(Gtk.Application):
                 continue
             row = Gtk.ListBoxRow()
             row.page = page
-            row.set_child(Gtk.Label(label=f"{page.get('title', '(sin título)')}\n{page.get('views', 0)} vistas", xalign=0))
+            title = page.get("title") or _("(sin título)")
+            views = page.get("views", 0)
+            views_text = ngettext("{views} vista", "{views} vistas", views).format(views=views)
+            row.set_child(Gtk.Label(label=f"{title}\n{views_text}", xalign=0))
             self.article_list.append(row)
 
     def build_editor(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         box.set_margin_start(8); box.set_margin_end(12); box.set_margin_top(12); box.set_margin_bottom(12)
-        self.title_entry = Gtk.Entry(placeholder_text="Título del artículo")
-        self.title_entry.connect("changed", lambda _: self.schedule_preview())
+        self.title_entry = Gtk.Entry(placeholder_text=_("Título del artículo"))
+        self.title_entry.connect("changed", lambda _entry: self.schedule_preview())
         box.append(self.title_entry)
         editor = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR)
         self.editor = editor
-        editor.get_buffer().connect("changed", lambda _: self.schedule_preview())
+        editor.get_buffer().connect("changed", lambda _buf: self.schedule_preview())
         editor.set_vexpand(True); editor.set_top_margin(8); editor.set_left_margin(8)
         box.append(build_markdown_toolbar(editor))
         scroll = Gtk.ScrolledWindow(); scroll.set_child(editor); scroll.set_vexpand(True)
         box.append(scroll)
         actions = Gtk.Box(spacing=8); actions.set_halign(Gtk.Align.END)
         if webkit_available():
-            self.preview_button = Gtk.ToggleButton(label="Vista previa")
-            self.preview_button.set_tooltip_text("Muestra u oculta la vista previa junto al editor")
+            self.preview_button = Gtk.ToggleButton(label=_("Vista previa"))
+            self.preview_button.set_tooltip_text(_("Muestra u oculta la vista previa junto al editor"))
             self.preview_button.connect("toggled", lambda button: self.set_preview_visible(button.get_active()))
         else:
-            self.preview_button = Gtk.Button(label="Vista previa")
-            self.preview_button.set_tooltip_text("Abre la vista previa en el navegador")
-            self.preview_button.connect("clicked", lambda _: self.preview_in_browser())
-        publish_button = Gtk.Button(label="Publicar")
+            self.preview_button = Gtk.Button(label=_("Vista previa"))
+            self.preview_button.set_tooltip_text(_("Abre la vista previa en el navegador"))
+            self.preview_button.connect("clicked", lambda _btn: self.preview_in_browser())
+        publish_button = Gtk.Button(label=_("Publicar"))
         publish_button.add_css_class("publish-action")
-        publish_button.connect("clicked", lambda _: self.publish())
-        self.update_button = Gtk.Button(label="Actualizar")
+        publish_button.connect("clicked", lambda _btn: self.publish())
+        self.update_button = Gtk.Button(label=_("Actualizar"))
         self.update_button.add_css_class("update-action")
-        self.update_button.connect("clicked", lambda _: self.update_article())
+        self.update_button.connect("clicked", lambda _btn: self.update_article())
         for button in (self.preview_button, publish_button, self.update_button):
             actions.append(button)
         box.append(actions)
@@ -1240,26 +1274,30 @@ class TelegraphWriter(Gtk.Application):
             # intérprete real y se conserva argv[0] para el icono del dock.
             os.execve("/proc/self/exe", [sys.orig_argv[0], os.path.abspath(__file__)], os.environ)
         write_config(config)
-        self.statusbar.set_text("Tema oscuro aplicado" if dark else "Tema claro aplicado")
+        self.statusbar.set_text(_("Tema oscuro aplicado") if dark else _("Tema claro aplicado"))
 
     def about(self):
         about = Gtk.AboutDialog(
             transient_for=self.window, modal=True, program_name=APP_NAME, version=APP_VERSION,
             authors=[AUTHOR], copyright=f"© 2026 {AUTHOR}",
-            comments="Cliente de escritorio para Telegra.ph: editor Markdown para crear, publicar y actualizar artículos.",
+            comments=_("Cliente de escritorio para Telegra.ph: editor Markdown para crear, publicar y actualizar artículos."),
             website=REPO_URL, website_label="github.com/seguidodoblado/telegraph-writer",
-            license_type=Gtk.License.CUSTOM, license=LICENSE_TEXT, wrap_license=True)
+            license_type=Gtk.License.CUSTOM, wrap_license=True, license=_(
+                "Este programa es software libre: se distribuye bajo la GNU General Public License, versión 3. "
+                "El texto completo está en el archivo LICENSE del repositorio y en https://www.gnu.org/licenses/gpl-3.0.html."
+            ))
         # Instalado, el icono está en el tema (hicolor); desde el código fuente
         # se carga el SVG del repositorio.
         if Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).has_icon("telegraph-writer"):
             about.set_logo_icon_name("telegraph-writer")
         else:
             about.set_logo(Gdk.Texture.new_from_filename(str(Path(__file__).resolve().parent / "telegraph-writer.svg")))
-        about.add_credit_section("Servicios de terceros", [
+        about.add_credit_section(_("Servicios de terceros"), [
             "Telegra.ph https://telegra.ph/",
-            "Catbox (subida de imágenes) https://catbox.moe/"])
+            _("Catbox (subida de imágenes) https://catbox.moe/")])
         about.present()
 
 
 if __name__ == "__main__":
+    install_i18n()
     sys.exit(TelegraphWriter().run(sys.argv))

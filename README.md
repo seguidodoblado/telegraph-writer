@@ -27,6 +27,7 @@ más allá de tu access token de Telegra.ph.
 - **Sube imágenes** a [Catbox](https://catbox.moe/) e insértalas automáticamente en el artículo, porque
   Telegra.ph tiene deshabilitadas las subidas nuevas.
 - **Modo claro y oscuro**, con los iconos del sistema en cada uno.
+- **Disponible en español e inglés**, según el idioma del sistema (o `$LANGUAGE`).
 
 ## Documentación
 
