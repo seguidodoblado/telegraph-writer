@@ -7,6 +7,16 @@
 <h1 align="center">Telegraph Writer</h1>
 
 <p align="center">
+  <img src="https://img.shields.io/github/v/release/seguidodoblado/telegraph-writer" alt="release">
+  <img src="https://img.shields.io/github/license/seguidodoblado/telegraph-writer" alt="license">
+  <img src="https://img.shields.io/github/last-commit/seguidodoblado/telegraph-writer" alt="last commit">
+  <img src="https://img.shields.io/github/downloads/seguidodoblado/telegraph-writer/total" alt="downloads">
+  <img src="https://img.shields.io/github/stars/seguidodoblado/telegraph-writer?style=flat" alt="stars">
+  <img src="https://img.shields.io/github/issues/seguidodoblado/telegraph-writer" alt="issues">
+  <img src="https://img.shields.io/github/languages/top/seguidodoblado/telegraph-writer" alt="language">
+</p>
+
+<p align="center">
   Escribe artículos en Markdown y publícalos en Telegra.ph, con vista previa fiel al resultado final.
 </p>
 
