@@ -48,6 +48,13 @@ class MarkdownToNodesTests(unittest.TestCase):
         tags = [node["tag"] for node in nodes if isinstance(node, dict)]
         self.assertEqual(tags, ["strong", "em", "code", "a", "img"])
 
+    def test_strikethrough_and_underline(self):
+        nodes = tw.inline_to_nodes("a ~~tachado~~ y __subrayado__")
+        formatted = [node for node in nodes if isinstance(node, dict)]
+        self.assertEqual([node["tag"] for node in formatted], ["s", "u"])
+        self.assertEqual(formatted[0]["children"], ["tachado"])
+        self.assertEqual(formatted[1]["children"], ["subrayado"])
+
 
 class ContentToTextTests(unittest.TestCase):
     def test_inline_formatting_stays_in_one_line(self):
@@ -71,9 +78,14 @@ class ContentToTextTests(unittest.TestCase):
         self.assertEqual(tw.content_to_text(nodes), "![](/file/a.jpg)")
 
     def test_round_trip_preserves_structure(self):
-        markdown = "# Titulo\n\n## Sub\n\nTexto con **negrita**, *cursiva* y [enlace](http://x).\n\n> cita\n\n- a\n- b\n\n1. uno\n\n---\n\n```\ncodigo\n```\n\n![](http://i/a.png)"
+        markdown = "# Titulo\n\n## Sub\n\nTexto con **negrita**, *cursiva*, ~~tachado~~, __subrayado__ y [enlace](http://x).\n\n> cita\n\n- a\n- b\n\n1. uno\n\n---\n\n```\ncodigo\n```\n\n![](http://i/a.png)"
         nodes = tw.markdown_to_nodes(markdown)
         self.assertEqual(tw.content_to_text(nodes), markdown)
+        self.assertEqual(tw.markdown_to_nodes(tw.content_to_text(nodes)), nodes)
+
+    def test_strikethrough_and_underline_round_trip(self):
+        nodes = [{"tag": "p", "children": ["Texto ", {"tag": "s", "children": ["tachado"]}, " y ", {"tag": "u", "children": ["subrayado"]}, "."]}]
+        self.assertEqual(tw.content_to_text(nodes), "Texto ~~tachado~~ y __subrayado__.")
         self.assertEqual(tw.markdown_to_nodes(tw.content_to_text(nodes)), nodes)
 
 
@@ -174,6 +186,10 @@ class PreviewTests(unittest.TestCase):
     def test_image_url_is_escaped_once(self):
         page = tw.render_preview("t", "![x](http://i/a.png?a=1&b=2)")
         self.assertIn('<img src="http://i/a.png?a=1&amp;b=2">', page)
+
+    def test_strikethrough_and_underline_are_rendered(self):
+        page = tw.render_preview("t", "~~tachado~~ y __subrayado__")
+        self.assertIn("<p><s>tachado</s> y <u>subrayado</u></p>", page)
         self.assertNotIn("&amp;amp;", page)
 
     def test_relative_image_and_unsafe_link(self):

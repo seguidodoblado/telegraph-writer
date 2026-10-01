@@ -1,3 +1,11 @@
+telegraph-writer (2.6.0-1ubuntu1) noble; urgency=medium
+
+  * Add a Markdown formatting toolbar above the editor (bold, italics,
+    strikethrough, underline, heading, lists, quote, code, link), ported
+    from Bloguero
+
+ -- seguidodoblado <jose.antonio.seguido@gmail.com>  Thu, 01 Oct 2026 21:08:43 +0200
+
 telegraph-writer (2.5.1-1ubuntu1) noble; urgency=medium
 
   * About dialog uses the standard GNOME About window, like Comic

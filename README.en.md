@@ -17,8 +17,8 @@
 Desktop application (GTK 4 + PyGObject, Spanish-language interface), for personal use: no server of its own and
 no account beyond your own Telegra.ph access token.
 
-- **Write in Markdown** (headings, emphasis, links, images, lists, quotes, code) instead of Telegra.ph's own web
-  editor.
+- **Write in Markdown** (headings, bold, italics, strikethrough, underline, links, images, lists, quotes, code)
+  with a formatting toolbar, instead of Telegra.ph's own web editor.
 - **Faithful preview**, in a panel next to the editor that updates while you type, exactly as it will be
   published (needs `gir1.2-webkit-6.0`; without it, it opens in the browser instead).
 - **Publish and update** articles on your Telegra.ph account, with protection against accidentally creating a

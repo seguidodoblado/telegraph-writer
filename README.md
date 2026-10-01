@@ -17,8 +17,8 @@
 Aplicación de escritorio (GTK 4 + PyGObject, interfaz en español), de uso personal: sin servidor propio ni cuenta
 más allá de tu access token de Telegra.ph.
 
-- **Escribe en Markdown** (encabezados, énfasis, enlaces, imágenes, listas, citas, código) en lugar del editor web
-  de Telegra.ph.
+- **Escribe en Markdown** (encabezados, negrita, cursiva, tachado, subrayado, enlaces, imágenes, listas, citas,
+  código) con una barra de formato, en lugar del editor web de Telegra.ph.
 - **Vista previa fiel**, en un panel junto al editor que se actualiza mientras escribes, tal como quedará
   publicado (necesita `gir1.2-webkit-6.0`; sin él se abre en el navegador).
 - **Publica y actualiza** artículos de tu cuenta de Telegra.ph, con protección contra crear un duplicado por
