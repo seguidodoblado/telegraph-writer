@@ -7,13 +7,18 @@
 <h1 align="center">Telegraph Writer</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/seguidodoblado/telegraph-writer" alt="release">
-  <img src="https://img.shields.io/github/license/seguidodoblado/telegraph-writer" alt="license">
-  <img src="https://img.shields.io/github/last-commit/seguidodoblado/telegraph-writer" alt="last commit">
-  <img src="https://img.shields.io/github/downloads/seguidodoblado/telegraph-writer/total" alt="downloads">
-  <img src="https://img.shields.io/github/stars/seguidodoblado/telegraph-writer?style=flat" alt="stars">
-  <img src="https://img.shields.io/github/issues/seguidodoblado/telegraph-writer" alt="issues">
-  <img src="https://img.shields.io/github/languages/top/seguidodoblado/telegraph-writer" alt="language">
+  <a href="https://github.com/seguidodoblado/telegraph-writer/releases"><img src="https://img.shields.io/github/v/release/seguidodoblado/telegraph-writer" alt="release"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/ci.yml"><img src="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/cd.yml"><img src="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/cd.yml/badge.svg" alt="CD"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/seguidodoblado/telegraph-writer" alt="license"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/commits/main/"><img src="https://img.shields.io/github/last-commit/seguidodoblado/telegraph-writer" alt="last commit"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/commits/main/"><img src="https://img.shields.io/github/commit-activity/t/seguidodoblado/telegraph-writer" alt="total commits"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/releases"><img src="https://img.shields.io/github/downloads/seguidodoblado/telegraph-writer/total" alt="downloads"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/stargazers"><img src="https://img.shields.io/github/stars/seguidodoblado/telegraph-writer?style=flat" alt="stars"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/issues"><img src="https://img.shields.io/github/issues/seguidodoblado/telegraph-writer" alt="issues"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer"><img src="https://img.shields.io/github/languages/top/seguidodoblado/telegraph-writer" alt="language"></a>
+  <a href="https://codetime.dev"><img alt="CodeTime Badge" src="https://shields.jannchie.com/endpoint?style=flat&color=0284c7&url=https%3A%2F%2Fcodetime.dev%2Fv3%2Fusers%2Fshield%3Fuid%3D36830"></a>
+  <a href="https://wakatime.com/badge/github/seguidodoblado/telegraph-writer"><img src="https://wakatime.com/badge/github/seguidodoblado/telegraph-writer.svg" alt="wakatime"></a>
 </p>
 
 <p align="center">
@@ -24,7 +29,7 @@
   <img src="docs/screenshot.png" alt="Captura de Telegraph Writer">
 </p>
 
-Aplicación de escritorio (GTK 4 + PyGObject, interfaz en español), de uso personal: sin servidor propio ni cuenta
+Aplicación de escritorio (GTK 4 + PyGObject, interfaz en español e inglés), de uso personal: sin servidor propio ni cuenta
 más allá de tu access token de Telegra.ph.
 
 - **Escribe en Markdown** (encabezados, negrita, cursiva, tachado, subrayado, enlaces, imágenes, listas, citas,
@@ -52,6 +57,10 @@ access token que tú mismo generas; la aplicación no aloja los artículos.
 Las imágenes que insertas se suben a [Catbox](https://catbox.moe/), un servicio externo de alojamiento; quedan
 fuera del control de la aplicación y sujetas a las condiciones de uso de Catbox.
 
+## Privacidad
+
+Telegraph Writer no tiene servidor ni cuenta propios y no recoge datos. Solo se comunica con Telegra.ph (para publicar y listar tus artículos) y con Catbox (para alojar las imágenes que subes). Qué se guarda y dónde está en la **[política de privacidad](PRIVACY.md)**.
+
 ## Licencia
 
-Este proyecto se distribuye bajo la GNU General Public License, versión 3 (ver `LICENSE`).
+Este proyecto se distribuye bajo la GNU General Public License, versión 3 o posterior (ver `LICENSE`).

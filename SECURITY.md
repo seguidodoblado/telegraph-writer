@@ -1,3 +1,5 @@
+<p align="right"><a href="SECURITY.en.md">🇺🇸 English</a></p>
+
 # Política de seguridad
 
 ## Versiones con soporte
