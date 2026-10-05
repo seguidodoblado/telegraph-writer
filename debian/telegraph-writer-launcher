@@ -1,2 +1,3 @@
 #!/bin/bash
-exec -a telegraph-writer python3 /opt/telegraph-writer/telegraph_writer.py "$@"
+export PYTHONPATH=/usr/share/telegraph-writer
+exec -a telegraph-writer python3 -m telegraph_writer "$@"

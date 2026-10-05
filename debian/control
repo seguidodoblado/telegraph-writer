@@ -1,0 +1,16 @@
+Source: telegraph-writer
+Section: editors
+Priority: optional
+Maintainer: Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>
+Standards-Version: 4.6.0
+Build-Depends: debhelper-compat (= 13), gettext
+
+Package: telegraph-writer
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-gi, gir1.2-gtk-4.0 (>= 4.12)
+Recommends: gir1.2-webkit-6.0
+Homepage: https://github.com/seguidodoblado/telegraph-writer
+Description: Cliente de escritorio para Telegra.ph
+ Editor Markdown para crear, publicar y actualizar artículos de
+ Telegra.ph, con barra de formato, vista previa, subida de imágenes,
+ borradores locales y tema claro u oscuro.

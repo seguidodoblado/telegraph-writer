@@ -1,0 +1,31 @@
+.TH TELEGRAPH\-WRITER 1 "" "telegraph-writer @VERSION@"
+.SH NOMBRE
+telegraph\-writer \- cliente de escritorio para Telegra.ph
+.SH SINOPSIS
+.B telegraph\-writer
+.SH DESCRIPCIÓN
+.B telegraph\-writer
+es una aplicación GTK para crear, publicar y actualizar artículos de Telegra.ph escritos en Markdown. Tiene una
+barra de formato, una vista previa en directo, subida de imágenes, borradores locales y tema claro u oscuro.
+.PP
+Abre la interfaz gráfica. Para publicar y listar artículos hace falta un access token de Telegra.ph, que se
+configura en
+.IR Ajustes .
+.SH ARCHIVOS
+.TP
+.I ~/.config/telegraph\-writer/config.json
+Ajustes del usuario: access token, carpeta de borradores, idioma y tema. Solo lo lee su dueño. Mientras la
+aplicación se reinicia para cambiar el tema o el idioma, guarda también el borrador sin guardar.
+.TP
+.I ~/Telegra.ph/
+Carpeta de borradores en Markdown por defecto (se puede cambiar en los ajustes).
+.SH ENTORNO
+.TP
+.B LANGUAGE
+Idioma de la interfaz cuando está en «Sistema» en los ajustes.
+.SH VÉASE TAMBIÉN
+Telegra.ph: https://telegra.ph/
+.PP
+Página del proyecto: https://github.com/seguidodoblado/telegraph\-writer
+.SH AUTOR
+Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>
