@@ -23,4 +23,4 @@ visible, hay que actualizar la wiki.
 
 Los cambios deben mantener la calidad y las convenciones establecidas para el proyecto.
 
-Este proyecto se distribuye bajo licencia [GPL-3.0 o posterior](LICENSE).
+Este proyecto se distribuye bajo licencia [GPL-3.0 o posterior](COPYING).

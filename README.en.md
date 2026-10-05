@@ -10,7 +10,7 @@
   <a href="https://github.com/seguidodoblado/telegraph-writer/releases"><img src="https://img.shields.io/github/v/release/seguidodoblado/telegraph-writer" alt="release"></a>
   <a href="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/ci.yml"><img src="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/cd.yml"><img src="https://github.com/seguidodoblado/telegraph-writer/actions/workflows/cd.yml/badge.svg" alt="CD"></a>
-  <a href="https://github.com/seguidodoblado/telegraph-writer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/seguidodoblado/telegraph-writer" alt="license"></a>
+  <a href="https://github.com/seguidodoblado/telegraph-writer/blob/main/COPYING"><img src="https://img.shields.io/github/license/seguidodoblado/telegraph-writer" alt="license"></a>
   <a href="https://github.com/seguidodoblado/telegraph-writer/commits/main/"><img src="https://img.shields.io/github/last-commit/seguidodoblado/telegraph-writer" alt="last commit"></a>
   <a href="https://github.com/seguidodoblado/telegraph-writer/commits/main/"><img src="https://img.shields.io/github/commit-activity/t/seguidodoblado/telegraph-writer" alt="total commits"></a>
   <a href="https://github.com/seguidodoblado/telegraph-writer/releases"><img src="https://img.shields.io/github/downloads/seguidodoblado/telegraph-writer/total" alt="downloads"></a>
@@ -63,4 +63,4 @@ Telegraph Writer has no server or account of its own and collects no data. It on
 
 ## License
 
-This project is distributed under the GNU General Public License, version 3 or later (see `LICENSE`).
+This project is distributed under the GNU General Public License, version 3 or later (see `COPYING`).

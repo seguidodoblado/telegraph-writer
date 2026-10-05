@@ -23,4 +23,4 @@ wiki must be updated.
 
 Changes must keep the quality and conventions established for the project.
 
-This project is distributed under the [GPL-3.0 or later](LICENSE) license.
+This project is distributed under the [GPL-3.0 or later](COPYING) license.
