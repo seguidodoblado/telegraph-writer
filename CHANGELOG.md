@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-10-05
+
 ### Añadido
 - **Tema Sistema / Claro / Oscuro** en el menú Tema (antes solo Claro y Oscuro; se guarda en `config.json` y se aplica reiniciando, conservando el borrador sin guardar). «Oscuro» y «Claro» eligen el tema GTK hermano del que tenga el sistema, conservando el acento (`Mint-Y-Aqua` ↔ `Mint-Y-Dark-Aqua`)
 - **Selector de idioma** en Ajustes (Sistema, Español o English; reinicia la aplicación). Con «Sistema» se usa el idioma del escritorio o `$LANGUAGE`

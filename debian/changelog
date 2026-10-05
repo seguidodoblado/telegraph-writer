@@ -1,3 +1,12 @@
+telegraph-writer (2.7.1-1) noble; urgency=medium
+
+  * Packaging: move the code to src/telegraph_writer with ui/, add
+    pytest, ruff, CI/CD, a System theme option and a language selector
+    in Settings, install under /usr/share with manual pages, real
+    application ID, license GPL-3.0 or later
+
+ -- José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Mon, 05 Oct 2026 11:11:51 +0200
+
 telegraph-writer (2.7.0-1ubuntu1) noble; urgency=medium
 
   * Add gettext-based translations (Spanish source, English catalog);
