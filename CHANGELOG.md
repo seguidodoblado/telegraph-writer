@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Añadido
-- **Tema Sistema / Claro / Oscuro** en Ajustes, junto al idioma (se guarda en `config.json` y se aplica reiniciando; el borrador sin guardar se conserva). «Oscuro» y «Claro» eligen el tema GTK hermano del que tenga el sistema, conservando el acento (`Mint-Y-Aqua` ↔ `Mint-Y-Dark-Aqua`)
+- **Tema Sistema / Claro / Oscuro** en el menú Tema (antes solo Claro y Oscuro; se guarda en `config.json` y se aplica reiniciando, conservando el borrador sin guardar). «Oscuro» y «Claro» eligen el tema GTK hermano del que tenga el sistema, conservando el acento (`Mint-Y-Aqua` ↔ `Mint-Y-Dark-Aqua`)
 - **Selector de idioma** en Ajustes (Sistema, Español o English; reinicia la aplicación). Con «Sistema» se usa el idioma del escritorio o `$LANGUAGE`
 - `ruff`, `pytest` (51 pruebas: Markdown, vista previa, API de Telegra.ph, ajustes, traducciones y tema) e integración continua (`ci.yml`: ruff, pytest y `.deb` con lintian) y despliegue (`cd.yml`: al subir una etiqueta `vX.Y.Z` ejecuta el CI y, solo si pasa, deja la release en borrador con el mismo `.deb` que construyó el CI)
 - Páginas de manual en inglés y español, `PRIVACY.md` y `PRIVACY.en.md`, y versión en inglés de `CONTRIBUTING`, `SECURITY` y `SUPPORT`, con selector de idioma; `CHANGELOG.md`
