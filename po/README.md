@@ -1,43 +1,49 @@
 # Traducciones (i18n)
 
-El idioma fuente del código es **español**: los textos de la interfaz se
-escriben directamente en español dentro de `telegraph_writer.py`
-(`_("Conectar con…")`), y no hace falta ningún catálogo `es.po` — si no hay
-traducción cargada, `gettext` devuelve el texto tal cual.
+El idioma fuente del código es **español**: los textos de la interfaz se escriben directamente en
+español dentro del código (`_("Cancelar")`), y no hace falta ningún catálogo `es.po` — si no hay
+traducción cargada, `gettext` devuelve el texto tal cual. El inglés está en `po/en.po`.
+
+El idioma se elige en **Ajustes** (Sistema, Español o English; reinicia la aplicación). Con «Sistema» sale del escritorio o de la variable `$LANGUAGE` (por ejemplo, `LANGUAGE=en telegraph-writer`). Un idioma nuevo se añade también a `LANGUAGES` en `config.py` y a `LANGUAGE_CODES` en `ui/gui.py`.
+
+## Qué se traduce y qué no
+
+Se traduce **lo que ve el usuario**: etiquetas, botones, menús, avisos de estado y mensajes de error.
+**No** se traduce lo que es dato o clave del programa:
+
+- Los nombres de servicios (Telegra.ph, Catbox), los de idioma («Español», «English») y las URL.
+- Las etiquetas y la sintaxis de Markdown (`**texto**`, `# título`…) y los nodos de la API de Telegra.ph.
+- El contenido de los artículos, que es del usuario.
 
 ## Añadir o cambiar un texto de la interfaz
 
-1. Envuelve el texto en `_(...)` (o en `ngettext(singular, plural, n)` si
-   depende de una cantidad), ambas definidas en el propio `telegraph_writer.py`.
-2. **No** metas la llamada a `_()` dentro de una f-string (`f"...{_('texto')}..."`)
-   ni le pases una variable: `xgettext` solo detecta una cadena literal como
-   argumento directo. Saca el texto a una plantilla y usa `.format()`:
+1. Envuelve el texto en `_(...)` (importado de `telegraph_writer.i18n`, o de `..i18n` en `ui/`). Para
+   cantidades, `ngettext(singular, plural, n)`.
+2. **No** metas `_()` dentro de una f-string ni le pases una variable: `xgettext` solo detecta un literal.
+   Saca el texto a una plantilla y usa `.format()` con nombres que se entiendan:
    ```python
-   # mal — xgettext no ve "Texto":
-   mensaje = f"Hola {_('Texto')}"
+   # mal — xgettext no ve "Renombrado":
+   mensaje = f"Renombrado: {antes} → {despues}"
    # bien:
-   mensaje = _("Hola {nombre}").format(nombre=texto)
+   mensaje = _("Renombrado: {antes} → {despues}").format(antes=antes, despues=despues)
    ```
-3. Si el texto es una **constante de módulo** (asignada fuera de cualquier
-   función), no la envuelvas ahí: ese código se ejecuta al importar el
-   archivo, antes de que `install_i18n()` fije el idioma, así que quedaría
-   congelado en español para siempre. Mueve el texto dentro de la función o
-   el método donde se usa (ver `LICENSE_TEXT` dentro de `about()` como
-   ejemplo ya resuelto así).
-4. Ejecuta `./i18n-extract.sh` desde la raíz del proyecto. Regenera
-   `po/telegraph-writer.pot` y actualiza `po/*.po` con las cadenas nuevas
-   (quedan con `msgstr ""` o marcadas `#, fuzzy` si el texto original cambió).
-5. Traduce las cadenas nuevas/fuzzy a mano en `po/en.po` (o el idioma que
-   corresponda) y quita la marca `#, fuzzy` una vez revisadas.
-6. Ejecuta `./i18n-compile.sh` para generar los `.mo` y probarlo en la app:
+3. Si el texto lleva llaves literales, duplícalas (`{{` y `}}`) y llama a `.format()`.
+4. **No uses `_` como variable** en los módulos que importan el traductor (`for _ in …`,
+   `lambda _: …`, `a, _ = …`): lo sombrearías. Usa `_unused`, `_button`, etc.
+5. Los módulos de `ui/` no necesitan nada más: los textos de nivel de módulo (listas, tablas) también se
+   traducen, porque el dominio se liga a la carpeta `i18n/` al importarla.
+6. Ejecuta `./i18n-extract.sh` desde la raíz. Regenera `po/telegraph-writer.pot` y actualiza `po/*.po` con
+   las cadenas nuevas (quedan con `msgstr ""` o marcadas `#, fuzzy` si el texto original cambió).
+7. Traduce las cadenas nuevas o `fuzzy` a mano en `po/en.po` y quita la marca `#, fuzzy` una vez revisadas.
+   Conserva los `{nombre}` tal cual, los espacios del principio y del final, las etiquetas `<b>` y los
+   saltos de línea.
+8. Ejecuta `./i18n-compile.sh` para generar los `.mo` y prueba la aplicación:
    ```sh
-   LANGUAGE=en python3 telegraph_writer.py
+   LANGUAGE=en python3 -m telegraph_writer
    ```
 
-`build-deb.sh` ya llama a `i18n-compile.sh` automáticamente, así que no hace
-falta compilar a mano antes de empaquetar. Las pruebas (`tests/test_i18n.py`)
-sí lo necesitan: ejecuta `./i18n-compile.sh` antes de
-`python3 -m unittest discover -s tests` si acabas de clonar el repositorio.
+`build-deb.sh` ya llama a `i18n-compile.sh`, así que el paquete siempre lleva los catálogos compilados.
+El CI también los compila antes de ejecutar las pruebas.
 
 ## Añadir un idioma nuevo
 
@@ -45,19 +51,24 @@ sí lo necesitan: ejecuta `./i18n-compile.sh` antes de
 msginit --input=po/telegraph-writer.pot --locale=<código> --output=po/<código>.po
 ```
 
-Traduce `po/<código>.po` y compílalo con `./i18n-compile.sh` — detecta
-cualquier `po/*.po` automáticamente, no hace falta tocar el script.
+Traduce `po/<código>.po` y compílalo con `./i18n-compile.sh`: detecta cualquier `po/*.po` solo, no hace
+falta tocar el script.
+
+## Créditos de traducción
+
+Cuando el «Acerca de» use `translator_credits=_("translator-credits")`, cada `po/<código>.po` pondrá en el
+`msgstr` de esa entrada a sus traductores, uno por línea (`\n`) y con `<correo>` opcional. No cambies el
+`msgid ""` de la cabecera del fichero: es el de la cabecera, no el de los créditos.
+
+## Pruebas
+
+Las pruebas fijan `LANGUAGE=es` en `tests/conftest.py`, así que no dependen del idioma de tu equipo.
+`tests/test_i18n.py` comprueba el catálogo inglés (necesita los `.mo` compilados) y que las traducciones
+conservan los `{nombre}` del original.
 
 ## Dónde vive cada cosa
 
-- `po/*.po`, `po/telegraph-writer.pot` — fuente de las traducciones,
-  versionado en git.
-- `i18n/<idioma>/LC_MESSAGES/telegraph-writer.mo` — catálogo compilado,
-  **no** se versiona (está en `.gitignore`), se genera con `i18n-compile.sh`.
-- `install_i18n()`, `_()` y `ngettext()`, al principio de `telegraph_writer.py`
-  — se llama una sola vez, en `if __name__ == "__main__":`, antes de
-  construir la ventana.
-
-Patrón e infraestructura (`install_i18n()`, los dos scripts `.sh` y este
-mismo README) portados de [Bloguero](https://github.com/seguidodoblado/bloguero),
-adaptados a que aquí todo vive en un único archivo en vez de un paquete.
+- `po/*.po`, `po/telegraph-writer.pot`: fuente de las traducciones, versionado en git.
+- `src/telegraph_writer/i18n/<idioma>/LC_MESSAGES/telegraph-writer.mo`: catálogo compilado, **no** se
+  versiona (está en `.gitignore`), se genera con `i18n-compile.sh`.
+- `src/telegraph_writer/i18n/__init__.py`: `install()` (se llama una vez al arrancar), `_()` y `ngettext()`.

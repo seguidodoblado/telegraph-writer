@@ -1,366 +1,45 @@
-#!/usr/bin/env python3
-"""Telegraph Writer: cliente de escritorio GTK4 para Telegra.ph."""
-
-import sys
-import os
+"""Interfaz GTK 4: ventana principal, lista de artículos, editor, vista previa y diálogos."""
 import json
-import html
-import re
-import gettext
-import locale
+import subprocess
+import sys
 import tempfile
 import webbrowser
-import urllib.parse
-import urllib.request
-import mimetypes
-import uuid
 from pathlib import Path
+
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Gdk, Gio, GLib
+from gi.repository import Gdk, Gio, GLib, Gtk
 
-# GTK deriva el WM_CLASS de la ventana del prgname (por defecto el nombre del
-# .py); se fija para que coincida con StartupWMClass del .desktop y Cinnamon
-# asocie la ventana a su icono también tras reiniciar para cambiar de tema.
+from .. import __version__
+from ..config import (
+    DRAFT_DIR,
+    dark_mode,
+    language,
+    read_config,
+    write_config,
+)
+from ..i18n import _, ngettext
+from ..markdown import content_to_text, markdown_to_nodes
+from ..preview import preview_update_script, render_preview
+from ..telegraph import fetch_all_pages, telegraph_api, upload_image
+from .theming import icon_choice, is_dark_theme, theme_variant
+from .toolbar import build_markdown_toolbar
+
+# GTK deriva el WM_CLASS de la ventana del prgname; se fija para que coincida con StartupWMClass del .desktop
+# y Cinnamon asocie la ventana a su icono también tras reiniciar para cambiar de tema o de idioma.
 GLib.set_prgname("telegraph-writer")
 
-# Traducciones (i18n): el idioma fuente del código es el español, así que no
-# hace falta ningún catálogo "es" — si no hay traducción cargada, gettext
-# devuelve el texto tal cual. Los catálogos compilados (.mo) viven junto al
-# script en i18n/<idioma>/LC_MESSAGES/telegraph-writer.mo; ver po/README.md.
-# Patrón e infraestructura portados de Bloguero (bloguero/src/bloguero/i18n/).
-I18N_DOMAIN = "telegraph-writer"
-I18N_DIR = Path(__file__).resolve().parent / "i18n"
-
-
-def install_i18n():
-    """Activa las traducciones según el idioma del sistema (o $LANGUAGE).
-    Se llama una sola vez, al arrancar, antes de construir cualquier texto."""
-    try:
-        locale.setlocale(locale.LC_ALL, "")
-    except locale.Error:
-        pass  # locale del sistema no instalado: se sigue en español
-    gettext.bindtextdomain(I18N_DOMAIN, str(I18N_DIR))
-
-
-def _(message):
-    return gettext.dgettext(I18N_DOMAIN, message)
-
-
-def ngettext(singular, plural, count):
-    return gettext.dngettext(I18N_DOMAIN, singular, plural, count)
-
 APP_NAME = "Telegraph Writer"
-CHANGELOG_FILE = Path(__file__).resolve().parent / "debian" / "changelog"
-try:
-    VERSION_FILE = Path(__file__).resolve().parent / "VERSION"
-    APP_VERSION = VERSION_FILE.read_text(encoding="utf-8").strip() if VERSION_FILE.exists() else re.search(r"\(([^)]+)\)", CHANGELOG_FILE.read_text(encoding="utf-8")).group(1)
-except (FileNotFoundError, AttributeError):
-    APP_VERSION = "0.0.0"
 AUTHOR = "Jose Antonio Seguido Doblado"
+AUTHOR_EMAIL = "jose.antonio.seguido@gmail.com"
 REPO_URL = "https://github.com/seguidodoblado/telegraph-writer"
-CONFIG_FILE = Path.home() / ".config" / "telegraph-writer" / "config.json"
-DRAFT_DIR = Path.home() / "Telegra.ph"
-API_URL = "https://api.telegra.ph"
-IMAGE_UPLOAD_URL = "https://catbox.moe/user/api.php"
-PAGE_LIST_LIMIT = 200  # máximo que admite getPageList por petición
+APPLICATION_ID = "io.github.seguidodoblado.TelegraphWriter"
+LOGO = Path(__file__).resolve().parents[3] / "telegraph-writer.svg"   # solo al ejecutar desde el repositorio
+LANGUAGE_CODES = [None, "es", "en"]
 COLOR_OK = "#78d47d"
 COLOR_ERROR = "#e06c75"
 
-INLINE_RE = re.compile(
-    r"!\[([^\]]*)\]\(([^)\s]+)\)|\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|`([^`]+)`"
-    r"|\*([^*]+)\*|~~([^~]+)~~|__([^_]+)__"
-)
-HEADING_RE = re.compile(r"^\s*(#{1,6})\s+(.+)$")
-LIST_ITEM_RE = re.compile(r"^\s*(?:([-*+])|\d+[.)])\s+(.*)$")
-RULE_RE = re.compile(r"^\s*([-*_])\1{2,}\s*$")
-
-
-def telegraph_api(method, params=None, path=None):
-    url = f"{API_URL}/{method}" if not path else f"{API_URL}/{method}/{path}"
-    request = urllib.request.Request(url, data=urllib.parse.urlencode(params or {}).encode(), method="POST")
-    request.add_header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-    with urllib.request.urlopen(request, timeout=30) as response:
-        result = json.loads(response.read().decode("utf-8"))
-    if not result.get("ok"):
-        raise RuntimeError(result.get("error", _("Error desconocido de Telegra.ph")))
-    return result["result"]
-
-
-def fetch_all_pages(token):
-    """Devuelve (artículos, total) paginando getPageList, que limita cada
-    petición a PAGE_LIST_LIMIT resultados."""
-    pages = []
-    while True:
-        batch = telegraph_api("getPageList", {"access_token": token, "offset": len(pages), "limit": PAGE_LIST_LIMIT})
-        received = batch.get("pages", [])
-        pages.extend(received)
-        total = batch.get("total_count", len(pages))
-        if not received or len(pages) >= total:
-            return pages, max(total, len(pages))
-
-
-def write_config(config):
-    """Escribe la configuración de forma atómica y solo legible por el usuario:
-    contiene el access token (y, al cambiar de tema, el borrador en curso)."""
-    CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    temporary = CONFIG_FILE.with_name(CONFIG_FILE.name + ".tmp")
-    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    os.fchmod(descriptor, 0o600)
-    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-        json.dump(config, handle, ensure_ascii=False, indent=2)
-    os.replace(temporary, CONFIG_FILE)
-
-
-def upload_image(filename):
-    """Sube una imagen a Catbox y devuelve su URL pública."""
-    file_path = Path(filename)
-    if file_path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".gif"}:
-        raise RuntimeError(_("Solo se admiten imágenes JPG, JPEG, PNG o GIF."))
-    if file_path.stat().st_size > 200 * 1024 * 1024:
-        raise RuntimeError(_("La imagen supera el límite de 200 MB."))
-    boundary = f"----TelegraphWriter{uuid.uuid4().hex}"
-    content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
-    body = (
-        f"--{boundary}\r\nContent-Disposition: form-data; name=\"reqtype\"\r\n\r\n"
-        f"fileupload\r\n--{boundary}\r\n"
-        f"Content-Disposition: form-data; name=\"fileToUpload\"; filename=\"{file_path.name}\"\r\n"
-        f"Content-Type: {content_type}\r\n\r\n"
-    ).encode() + file_path.read_bytes() + f"\r\n--{boundary}--\r\n".encode()
-    request = urllib.request.Request(IMAGE_UPLOAD_URL, data=body, method="POST")
-    request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
-    request.add_header("User-Agent", "Telegraph-Writer")
-    with urllib.request.urlopen(request, timeout=60) as response:
-        result = response.read().decode().strip()
-    if not result.startswith(("http://", "https://")):
-        body = result or _("respuesta vacía")
-        raise RuntimeError(_("Catbox rechazó la imagen: {body}").format(body=body))
-    return result
-
-
-def inline_to_nodes(text):
-    result = []
-    position = 0
-    for match in INLINE_RE.finditer(text):
-        if match.start() > position:
-            result.append(text[position:match.start()])
-        if match.group(1) is not None:
-            result.append({"tag": "img", "attrs": {"src": match.group(2)}})
-        elif match.group(3) is not None:
-            result.append({"tag": "a", "attrs": {"href": match.group(4)}, "children": [match.group(3)]})
-        elif match.group(5) is not None:
-            result.append({"tag": "strong", "children": [match.group(5)]})
-        elif match.group(6) is not None:
-            result.append({"tag": "code", "children": [match.group(6)]})
-        elif match.group(8) is not None:
-            result.append({"tag": "s", "children": [match.group(8)]})
-        elif match.group(9) is not None:
-            result.append({"tag": "u", "children": [match.group(9)]})
-        else:
-            result.append({"tag": "em", "children": [match.group(7)]})
-        position = match.end()
-    if position < len(text):
-        result.append(text[position:])
-    return result or [""]
-
-
-def theme_variant(name, dark):
-    """Deriva el nombre del tema GTK hermano (claro/oscuro) preservando el
-    acento. Sigue la convención Mint-Y[-Dark]-<Acento> de Linux Mint y, para
-    el resto de temas, la de Adwaita/Yaru (<tema>[-<acento>]-dark)."""
-    base = re.sub(r"-dark(?=-|$)", "", name, count=1, flags=re.IGNORECASE)
-    if not dark:
-        return base
-    parts = base.split("-", 2)
-    if parts[0] == "Mint" and len(parts) >= 2:
-        return f"{parts[0]}-{parts[1]}-Dark" + (f"-{parts[2]}" if len(parts) > 2 else "")
-    return base + "-dark"
-
-
-def is_dark_theme(name):
-    """Indica si un tema GTK corresponde a una variante oscura."""
-    return bool(name and "-dark" in name.lower())
-
-
-# Iconos de color que Mint-Y-Yaru no tiene en versión simbólica: en oscuro se
-# sustituyen por un equivalente que sí la tenga.
-SYMBOLIC_ALTERNATIVES = {
-    "applications-internet": "network-workgroup",
-    "preferences-desktop-theme": "preferences-desktop-appearance",
-}
-
-
-def icon_variant(name, dark, has_icon):
-    """En oscuro prefiere la variante simbólica (monocroma) del icono, o la de
-    su alternativa, si el tema la tiene; en claro deja el icono de color."""
-    if dark:
-        for base in (name, SYMBOLIC_ALTERNATIVES.get(name)):
-            if base and has_icon(base + "-symbolic"):
-                return base + "-symbolic"
-    return name
-
-
-def markdown_to_nodes(markdown):
-    nodes = []
-    current = None  # lista o cita abierta, para agrupar líneas consecutivas
-    code_lines = None  # líneas del bloque de código en curso, si hay uno abierto
-    for line in markdown.replace("\r\n", "\n").split("\n"):
-        if line.strip().startswith("```"):
-            if code_lines is None:
-                code_lines = []
-            else:
-                nodes.append({"tag": "pre", "children": ["\n".join(code_lines)]})
-                code_lines = None
-            current = None
-            continue
-        if code_lines is not None:
-            code_lines.append(line)
-            continue
-        if not line.strip():
-            continue
-        heading = HEADING_RE.match(line)
-        item = LIST_ITEM_RE.match(line)
-        if heading:
-            nodes.append({"tag": "h3" if len(heading.group(1)) == 1 else "h4", "children": inline_to_nodes(heading.group(2))})
-            current = None
-        elif RULE_RE.match(line):
-            nodes.append({"tag": "hr"})
-            current = None
-        elif line.lstrip().startswith(">"):
-            if current is None or current["tag"] != "blockquote":
-                current = {"tag": "blockquote", "children": []}
-                nodes.append(current)
-            current["children"].append({"tag": "p", "children": inline_to_nodes(line.lstrip()[1:].strip())})
-        elif item:
-            tag = "ul" if item.group(1) else "ol"
-            if current is None or current["tag"] != tag:
-                current = {"tag": tag, "children": []}
-                nodes.append(current)
-            current["children"].append({"tag": "li", "children": inline_to_nodes(item.group(2))})
-        else:
-            nodes.append({"tag": "p", "children": inline_to_nodes(line.strip())})
-            current = None
-    if code_lines is not None:
-        nodes.append({"tag": "pre", "children": ["\n".join(code_lines)]})
-    return nodes
-
-
-def plain_text(nodes):
-    """Texto de los nodos sin ninguna marca de formato."""
-    return "".join(node if isinstance(node, str) else plain_text(node.get("children", [])) for node in nodes)
-
-
-def inline_to_text(nodes):
-    """Convierte nodos en línea (texto, enlaces, negritas, imágenes…) a Markdown
-    sin insertar saltos de línea, para no romper los párrafos."""
-    parts = []
-    for node in nodes:
-        if isinstance(node, str):
-            parts.append(node)
-            continue
-        tag = node.get("tag", "")
-        attrs = node.get("attrs", {})
-        inner = inline_to_text(node.get("children", []))
-        if tag == "img":
-            parts.append(f"![]({attrs.get('src', '')})")
-        elif tag == "a":
-            parts.append(f"[{inner}]({attrs.get('href', '')})")
-        elif tag in ("strong", "b"):
-            parts.append(f"**{inner}**")
-        elif tag in ("em", "i"):
-            parts.append(f"*{inner}*")
-        elif tag == "code":
-            parts.append(f"`{inner}`")
-        elif tag == "s":
-            parts.append(f"~~{inner}~~")
-        elif tag == "u":
-            parts.append(f"__{inner}__")
-        elif tag == "br":
-            parts.append("\n")
-        else:
-            parts.append(inner)
-    return "".join(parts)
-
-
-def content_to_text(nodes):
-    """Reconstruye un borrador Markdown a partir del contenido de un artículo:
-    cada nodo de bloque genera un bloque separado por una línea en blanco (las
-    listas, citas y códigos mantienen sus líneas juntas) y el formato en línea
-    se conserva. Telegra.ph no guarda las líneas en blanco del original."""
-    blocks = []
-    for node in nodes:
-        if isinstance(node, str):
-            if node.strip():
-                blocks.append(node.strip())
-            continue
-        tag = node.get("tag", "")
-        children = node.get("children", [])
-        if tag == "h3":
-            blocks.append(f"# {inline_to_text(children)}")
-        elif tag == "h4":
-            blocks.append(f"## {inline_to_text(children)}")
-        elif tag == "blockquote":
-            blocks.append("\n".join(f"> {line}" for line in content_to_text(children).split("\n") if line))
-        elif tag in ("ul", "ol"):
-            items = []
-            for number, item in enumerate(children, 1):
-                content = inline_to_text(item.get("children", [])) if isinstance(item, dict) else item
-                items.append(f"{number}. {content}" if tag == "ol" else f"- {content}")
-            blocks.append("\n".join(items))
-        elif tag == "pre":
-            blocks.append("\n".join(["```", plain_text(children), "```"]))
-        elif tag == "hr":
-            blocks.append("---")
-        elif tag == "figure":
-            blocks.append(content_to_text(children))
-        else:
-            text = inline_to_text([node])
-            if text.strip():
-                blocks.append(text)
-    return "\n\n".join(blocks)
-
-
-VOID_TAGS = {"br", "hr", "img"}
-PREVIEW_STYLE = (
-    "body{max-width:680px;margin:60px auto;padding:0 25px;font:18px Georgia,serif;line-height:1.65}"
-    "h1{font:42px Arial,sans-serif}h3,h4{font-family:Arial,sans-serif;line-height:1.3}"
-    "blockquote{margin:1em 0;padding-left:1em;border-left:3px solid #000}"
-    "pre,code{font-family:monospace;background:#f3f3f3}pre{padding:.7em;overflow-x:auto}"
-    "img{max-width:100%}hr{border:0;border-top:1px solid #ccc;margin:2em 0}"
-)
-
-
-def preview_url(url):
-    """Rutas relativas de Telegra.ph (/file/…) se resuelven contra su dominio
-    y solo se admiten enlaces http(s), como al publicar."""
-    url = urllib.parse.urljoin("https://telegra.ph", url)
-    return url if url.lower().startswith(("http://", "https://")) else "#"
-
-
-def nodes_to_html(nodes):
-    """HTML de los nodos de Telegra.ph: los mismos que se envían al publicar."""
-    parts = []
-    for node in nodes:
-        if isinstance(node, str):
-            parts.append(html.escape(node))
-            continue
-        tag = node.get("tag", "")
-        attrs = node.get("attrs", {})
-        attributes = ""
-        if tag == "a":
-            attributes = f' href="{html.escape(preview_url(attrs.get("href", "")), quote=True)}"'
-        elif tag == "img":
-            attributes = f' src="{html.escape(preview_url(attrs.get("src", "")), quote=True)}"'
-        if tag in VOID_TAGS:
-            parts.append(f"<{tag}{attributes}>")
-        else:
-            parts.append(f"<{tag}{attributes}>{nodes_to_html(node.get('children', []))}</{tag}>")
-    return "".join(parts)
-
-
-# La vista previa solo contiene HTML propio: se bloquean los scripts de la
-# página y solo se permiten imágenes http(s) y los estilos en línea.
 PREVIEW_CSP = "default-src 'none'; img-src http: https:; style-src 'unsafe-inline'"
 
 
@@ -374,29 +53,6 @@ ACTION_CSS = (
     "button.publish-action:disabled,button.update-action:disabled{opacity:.45;}"
 )
 
-
-def preview_body(title, text):
-    """Cuerpo de la vista previa: el Markdown se convierte en los mismos nodos
-    que se publican, de modo que se ve igual que en Telegra.ph."""
-    return f"<h1>{html.escape(title)}</h1>{nodes_to_html(markdown_to_nodes(text))}"
-
-
-def render_preview(title, text):
-    """Página HTML completa de la vista previa."""
-    return (
-        f"<!doctype html><html lang='es'><head><meta charset='utf-8'>"
-        f"<meta http-equiv='Content-Security-Policy' content=\"{PREVIEW_CSP}\">"
-        f"<title>{html.escape(title)}</title><style>{PREVIEW_STYLE}</style></head>"
-        f"<body>{preview_body(title, text)}</body></html>"
-    )
-
-
-def preview_update_script(title, text):
-    """JavaScript que sustituye el cuerpo de una vista previa ya cargada; así
-    el panel se actualiza sin perder la posición de desplazamiento."""
-    return f"document.title={json.dumps(title)};document.body.innerHTML={json.dumps(preview_body(title, text))};"
-
-
 def webkit_available():
     """WebKitGTK 6.0 instalado (se comprueba sin cargarlo)."""
     return "6.0" in gi.Repository.get_default().enumerate_versions("WebKit")
@@ -406,191 +62,15 @@ def count_text(count):
     return ngettext("{count} artículo", "{count} artículos", count).format(count=count)
 
 
-# Barra de formato Markdown para el editor, portada de Bloguero
-# (bloguero/src/bloguero/ui/markdown_toolbar.py, escrita pensando en
-# copiarse tal cual a este proyecto) y ampliada con tachado y subrayado.
-# Solo depende de Gtk: envuelve o antepone sintaxis Markdown en el
-# Gtk.TextBuffer del Gtk.TextView que se le pase, sin tocar el resto de la
-# aplicación.
-
-_TOOLBAR_NUMBERED_RE = re.compile(r"^\d+\. ")
-_TOOLBAR_HEADING_RE = re.compile(r"^(#{1,6}) (.*)$")
-_TOOLBAR_MAX_HEADING_LEVEL = 2
-
-
-def build_markdown_toolbar(text_view):
-    """Crea una barra de botones de formato Markdown para `text_view`."""
-    toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-    toolbar.add_css_class("toolbar")
-
-    # Cada entrada: (icon_name simbólico | None, texto si no hay icono,
-    # tooltip, acción). Los iconos ya son simbólicos, así que no pasan por
-    # icon_variant(): se ven igual en los dos temas, como el resto de
-    # controles «en línea» de GNOME.
-    buttons = [
-        ("format-text-bold-symbolic", None, _("Negrita (**texto**)"), lambda: _toolbar_wrap_selection(text_view, "**", "**")),
-        ("format-text-italic-symbolic", None, _("Cursiva (*texto*)"), lambda: _toolbar_wrap_selection(text_view, "*", "*")),
-        ("format-text-strikethrough-symbolic", None, _("Tachado (~~texto~~)"), lambda: _toolbar_wrap_selection(text_view, "~~", "~~")),
-        ("format-text-underline-symbolic", None, _("Subrayado (__texto__)"), lambda: _toolbar_wrap_selection(text_view, "__", "__")),
-        (None, "H", _("Título: alterna H1 (#), H2 (##) y texto normal"), lambda: _toolbar_cycle_heading(text_view)),
-        ("view-list-bullet-symbolic", None, _("Lista con viñetas"), lambda: _toolbar_toggle_line_prefix(text_view, "- ")),
-        ("view-list-ordered-symbolic", None, _("Lista numerada"), lambda: _toolbar_apply_numbered_list(text_view)),
-        ("format-indent-more-symbolic", None, _("Cita (> texto)"), lambda: _toolbar_toggle_line_prefix(text_view, "> ")),
-        (None, "<>", _("Código (`texto`)"), lambda: _toolbar_wrap_selection(text_view, "`", "`")),
-        ("insert-link-symbolic", None, _("Enlace ([texto](url))"), lambda: _toolbar_apply_link(text_view)),
-    ]
-
-    for icon_name, label, tooltip, action in buttons:
-        button = Gtk.Button(icon_name=icon_name) if icon_name else Gtk.Button(label=label)
-        button.add_css_class("flat")
-        button.set_tooltip_text(tooltip)
-        button.connect("clicked", lambda _btn, fn=action: fn())
-        toolbar.append(button)
-
-    return toolbar
-
-
-def _toolbar_wrap_selection(text_view, prefix, suffix):
-    buffer = text_view.get_buffer()
-    bounds = buffer.get_selection_bounds()
-
-    buffer.begin_user_action()
-    if bounds:
-        start, end = bounds
-        start_off, end_off = start.get_offset(), end.get_offset()
-        selected = buffer.get_text(start, end, True)
-        buffer.delete(buffer.get_iter_at_offset(start_off), buffer.get_iter_at_offset(end_off))
-        buffer.insert(buffer.get_iter_at_offset(start_off), f"{prefix}{selected}{suffix}")
-        cursor_offset = start_off + len(prefix) + len(selected) + len(suffix)
-    else:
-        offset = buffer.get_iter_at_mark(buffer.get_insert()).get_offset()
-        buffer.insert(buffer.get_iter_at_offset(offset), f"{prefix}{suffix}")
-        cursor_offset = offset + len(prefix)
-    buffer.end_user_action()
-
-    buffer.place_cursor(buffer.get_iter_at_offset(cursor_offset))
-    text_view.grab_focus()
-
-
-def _toolbar_selected_or_cursor_lines(text_view):
-    """Devuelve (offset_inicio, offset_fin) de las líneas completas afectadas."""
-    buffer = text_view.get_buffer()
-    bounds = buffer.get_selection_bounds()
-    if bounds:
-        start, end = bounds
-    else:
-        it = buffer.get_iter_at_mark(buffer.get_insert())
-        start, end = it.copy(), it.copy()
-
-    start_it = buffer.get_iter_at_offset(start.get_offset())
-    start_it.set_line_offset(0)
-    end_it = buffer.get_iter_at_offset(end.get_offset())
-    if not end_it.ends_line():
-        end_it.forward_to_line_end()
-    return start_it.get_offset(), end_it.get_offset()
-
-
-def _toolbar_toggle_line_prefix(text_view, prefix):
-    buffer = text_view.get_buffer()
-    region_start, region_end = _toolbar_selected_or_cursor_lines(text_view)
-    text = buffer.get_text(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end), True)
-    lines = text.split("\n")
-
-    if all((not line) or line.startswith(prefix) for line in lines):
-        new_lines = [line[len(prefix):] if line.startswith(prefix) else line for line in lines]
-    else:
-        new_lines = [prefix + line if line else line for line in lines]
-    new_text = "\n".join(new_lines)
-
-    buffer.begin_user_action()
-    buffer.delete(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end))
-    buffer.insert(buffer.get_iter_at_offset(region_start), new_text)
-    buffer.end_user_action()
-    text_view.grab_focus()
-
-
-def _toolbar_cycle_heading(text_view):
-    """Alterna el nivel de título de las líneas afectadas: normal -> H1 -> H2 -> normal."""
-    buffer = text_view.get_buffer()
-    region_start, region_end = _toolbar_selected_or_cursor_lines(text_view)
-    text = buffer.get_text(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end), True)
-    lines = text.split("\n")
-
-    stripped = []
-    current_level = 0
-    for i, line in enumerate(lines):
-        match = _TOOLBAR_HEADING_RE.match(line)
-        if match:
-            content, level = match.group(2), len(match.group(1))
-        else:
-            content, level = line, 0
-        if i == 0:
-            current_level = level
-        stripped.append(content)
-
-    next_level = 0 if current_level >= _TOOLBAR_MAX_HEADING_LEVEL else current_level + 1
-    if next_level == 0:
-        new_lines = stripped
-    else:
-        prefix = "#" * next_level + " "
-        new_lines = [prefix + content if content else content for content in stripped]
-    new_text = "\n".join(new_lines)
-
-    buffer.begin_user_action()
-    buffer.delete(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end))
-    buffer.insert(buffer.get_iter_at_offset(region_start), new_text)
-    buffer.end_user_action()
-    text_view.grab_focus()
-
-
-def _toolbar_apply_numbered_list(text_view):
-    buffer = text_view.get_buffer()
-    region_start, region_end = _toolbar_selected_or_cursor_lines(text_view)
-    text = buffer.get_text(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end), True)
-    lines = text.split("\n")
-
-    if all((not line) or _TOOLBAR_NUMBERED_RE.match(line) for line in lines):
-        new_lines = [_TOOLBAR_NUMBERED_RE.sub("", line) for line in lines]
-    else:
-        new_lines = [f"{i + 1}. {line}" if line else line for i, line in enumerate(lines)]
-    new_text = "\n".join(new_lines)
-
-    buffer.begin_user_action()
-    buffer.delete(buffer.get_iter_at_offset(region_start), buffer.get_iter_at_offset(region_end))
-    buffer.insert(buffer.get_iter_at_offset(region_start), new_text)
-    buffer.end_user_action()
-    text_view.grab_focus()
-
-
-def _toolbar_apply_link(text_view):
-    buffer = text_view.get_buffer()
-    bounds = buffer.get_selection_bounds()
-
-    buffer.begin_user_action()
-    if bounds:
-        start, end = bounds
-        start_off, end_off = start.get_offset(), end.get_offset()
-        text = buffer.get_text(start, end, True)
-        buffer.delete(buffer.get_iter_at_offset(start_off), buffer.get_iter_at_offset(end_off))
-        buffer.insert(buffer.get_iter_at_offset(start_off), f"[{text}](url)")
-        url_start = start_off + len(text) + 3
-    else:
-        offset = buffer.get_iter_at_mark(buffer.get_insert()).get_offset()
-        placeholder = _("texto del enlace")
-        buffer.insert(buffer.get_iter_at_offset(offset), f"[{placeholder}](url)")
-        url_start = offset + len(placeholder) + 3
-    buffer.end_user_action()
-
-    url_end = url_start + len("url")
-    buffer.select_range(buffer.get_iter_at_offset(url_start), buffer.get_iter_at_offset(url_end))
-    text_view.grab_focus()
+def run_gui():
+    return TelegraphWriter().run(sys.argv)
 
 
 class TelegraphWriter(Gtk.Application):
     def __init__(self):
         # La asociación con el icono del dock se hace mediante el prgname
         # (WM_CLASS) fijado al inicio del módulo y StartupWMClass.
-        super().__init__()
+        super().__init__(application_id=APPLICATION_ID)
         self.connect("activate", self.on_activate)
 
     def on_activate(self, app):
@@ -603,9 +83,10 @@ class TelegraphWriter(Gtk.Application):
         self.system_theme = Gtk.Settings.get_default().get_property("gtk-theme-name")
         # Los iconos se eligen al construir la interfaz, así que el modo oscuro
         # (preferencia guardada o, si no hay, el del sistema) se decide antes.
-        saved_theme = self.read_config().get("dark_mode")
-        self.dark = bool(saved_theme) if saved_theme is not None else is_dark_theme(self.system_theme)
-        self.presented = False
+        saved_theme = dark_mode()
+        self.dark = saved_theme if saved_theme is not None else is_dark_theme(self.system_theme)
+        if saved_theme is not None:   # antes de presentar la ventana: en caliente Cinnamon no repinta
+            Gtk.Settings.get_default().set_property("gtk-theme-name", theme_variant(self.system_theme, saved_theme))
         self.pages = []
         self.preview_file = None
         self.preview_view = None  # WebView del panel: se crea al abrirlo por primera vez
@@ -626,11 +107,8 @@ class TelegraphWriter(Gtk.Application):
         self.mark_clean()
         self.restore_pending_session()
         self.update_action_buttons()
-        if saved_theme is not None:
-            self.set_theme(bool(saved_theme))
         self.load_pages()
         self.window.present()
-        self.presented = True
 
     def editor_text(self):
         start, end = self.editor.get_buffer().get_bounds()
@@ -700,11 +178,7 @@ class TelegraphWriter(Gtk.Application):
         write_config(config)
 
     def read_config(self):
-        try:
-            config = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            return {}
-        return config if isinstance(config, dict) else {}
+        return read_config()
 
     def access_token(self):
         return self.read_config().get("access_token", "")
@@ -741,7 +215,7 @@ class TelegraphWriter(Gtk.Application):
             self.connection_label.set_text(_("Conectado"))
             self.article_count_label.set_text(count_text(total))
             self.account_label.set_text(self.account_name(token))
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
             self.connection_dot.set_markup(f'<span foreground="{COLOR_ERROR}">●</span>')
             self.connection_label.set_text(_("Sin conexión"))
             self.statusbar.set_text(_("Error: {error}").format(error=error))
@@ -750,7 +224,7 @@ class TelegraphWriter(Gtk.Application):
         try:
             account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name"])})
             return account.get("short_name") or _("Cuenta de Telegra.ph")
-        except Exception:
+        except Exception:  # noqa: BLE001 - es un dato accesorio: se sigue con un valor por defecto
             return _("Cuenta de Telegra.ph")
 
     def load_article(self, _listbox, row):
@@ -761,7 +235,7 @@ class TelegraphWriter(Gtk.Application):
     def open_remote_article(self, page):
         try:
             article = telegraph_api("getPage", {"access_token": self.access_token(), "return_content": "true"}, page["path"])
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
             self.statusbar.set_text(_("Error al cargar el artículo: {error}").format(error=error))
             return
         # Un artículo remoto no está asociado a ningún borrador local: si se
@@ -890,7 +364,7 @@ class TelegraphWriter(Gtk.Application):
             return
         try:
             page = telegraph_api("createPage", {"access_token": token, "title": title, "content": json.dumps(markdown_to_nodes(self.editor_text()), ensure_ascii=False), "return_content": "false"})
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
             self.statusbar.set_text(_("Error al publicar: {error}").format(error=error))
             return
         self.current_path = page.get("path")
@@ -916,7 +390,7 @@ class TelegraphWriter(Gtk.Application):
             return
         try:
             page = telegraph_api("editPage", {"access_token": token, "title": title, "content": json.dumps(markdown_to_nodes(self.editor_text()), ensure_ascii=False), "return_content": "false"}, self.current_path)
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
             self.statusbar.set_text(_("Error al actualizar: {error}").format(error=error))
             return
         self.current_url = page.get("url", self.current_url)
@@ -948,7 +422,7 @@ class TelegraphWriter(Gtk.Application):
             buffer = self.editor.get_buffer()
             buffer.insert_at_cursor(f"![]({url})")
             self.statusbar.set_text(_("Imagen subida correctamente"))
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
             message = _("No se pudo subir la imagen.\n\n{error}").format(error=error)
             self.show_message(message, _("Error al insertar imagen"))
             self.statusbar.set_text(_("Error al subir la imagen"))
@@ -1022,7 +496,7 @@ class TelegraphWriter(Gtk.Application):
     def settings(self):
         dialog = Gtk.Dialog(transient_for=self.window, modal=True)
         dialog.set_title(_("Ajustes"))
-        dialog.set_default_size(520, 180)
+        dialog.set_default_size(560, 240)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         box.set_margin_start(16); box.set_margin_end(16); box.set_margin_top(16); box.set_margin_bottom(16)
         entry = Gtk.Entry(); entry.set_placeholder_text(_("Access token de Telegra.ph"))
@@ -1030,6 +504,11 @@ class TelegraphWriter(Gtk.Application):
         draft_entry = Gtk.Entry(); draft_entry.set_text(str(self.draft_dir)); draft_entry.set_hexpand(True)
         draft_row = Gtk.Box(spacing=8); draft_row.append(Gtk.Label(label=_("Borradores:"), xalign=0)); draft_row.append(draft_entry)
         choose = Gtk.Button(label=_("Elegir…")); draft_row.append(choose); box.append(draft_row)
+        # Los nombres de idioma no se traducen: «English» se ve igual con la app en español, y viceversa
+        language_drop = Gtk.DropDown.new_from_strings([_("Sistema"), "Español", "English"])
+        language_drop.set_selected(LANGUAGE_CODES.index(language()))
+        language_row = Gtk.Box(spacing=8); language_row.append(Gtk.Label(label=_("Idioma:"), xalign=0)); language_row.append(language_drop)
+        language_row.append(Gtk.Label(label=_("Se aplica reiniciando la aplicación."), xalign=0, css_classes=["dim-label"])); box.append(language_row)
         feedback = Gtk.Label(xalign=0)
         box.append(feedback)
         buttons = Gtk.Box(spacing=8); buttons.set_halign(Gtk.Align.END)
@@ -1051,7 +530,7 @@ class TelegraphWriter(Gtk.Application):
             try:
                 account = telegraph_api("getAccountInfo", {"access_token": token, "fields": json.dumps(["short_name", "page_count"])})
                 feedback.set_text(_("Conectado: {name} · {count}").format(name=account.get("short_name", ""), count=count_text(account.get("page_count", 0))))
-            except Exception as error:
+            except Exception as error:  # noqa: BLE001 - el motivo se muestra al usuario, no debe cerrar la app
                 feedback.set_text(_("Error: {error}").format(error=error))
         test.connect("clicked", test_connection)
 
@@ -1059,6 +538,9 @@ class TelegraphWriter(Gtk.Application):
             config = self.read_config()
             config["access_token"] = entry.get_text().strip()
             config["draft_dir"] = draft_entry.get_text().strip() or str(DRAFT_DIR)
+            chosen_language = LANGUAGE_CODES[language_drop.get_selected()]
+            language_changed = chosen_language != language()
+            config["language"] = chosen_language
             try:
                 write_config(config)
             except OSError as error:
@@ -1067,6 +549,8 @@ class TelegraphWriter(Gtk.Application):
             self.draft_dir = Path(config["draft_dir"]).expanduser()
             dialog.close()
             self.load_pages()
+            if language_changed:
+                self.restart()
         save.connect("clicked", save_config)
         dialog.present()
 
@@ -1104,9 +588,11 @@ class TelegraphWriter(Gtk.Application):
         self.statusbar.set_margin_bottom(4)
         root.append(self.statusbar)
 
-    def icon(self, name):
+    def icon(self, names):
+        """Icono del tema: simbólico en el modo oscuro y de color en el claro (ver theming.icon_choice)."""
+        names = (names,) if isinstance(names, str) else names
         theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
-        return Gtk.Image.new_from_icon_name(icon_variant(name, self.dark, theme.has_icon))
+        return Gtk.Image.new_from_icon_name(icon_choice(names, self.dark, theme.has_icon))
 
     def build_menubar(self):
         bar = Gtk.Box(spacing=12)
@@ -1124,6 +610,7 @@ class TelegraphWriter(Gtk.Application):
                 (_("Abrir artículo en navegador"), "web-browser", self.open_in_browser),
             )),
             (_("Tema"), "preferences-desktop-theme", (
+                (_("Sistema"), "preferences-desktop-theme", lambda: self.set_theme(None)),
                 (_("Claro"), "weather-clear", lambda: self.set_theme(False)),
                 (_("Oscuro"), "weather-clear-night", lambda: self.set_theme(True)),
             )),
@@ -1256,48 +743,38 @@ class TelegraphWriter(Gtk.Application):
         box.append(actions)
         return box
 
+    def restart(self):
+        """Relanza la aplicación con un proceso nuevo, conservando el borrador en curso (se guarda en config.json)."""
+        config = self.read_config()
+        config["_pending_session"] = self.collect_session_state()
+        write_config(config)
+        # Un exec en el sitio conservaría los descriptores abiertos (y con ellos el registro D-Bus de esta
+        # instancia): el proceso nuevo se vería como secundario y se cerraría sin ventana. El ejecutable se
+        # toma de /proc/self/exe, no de sys.executable, porque el lanzador instalado usa «exec -a».
+        subprocess.Popen(["/proc/self/exe", "-m", "telegraph_writer"], start_new_session=True)
+        self.quit()
+
     def set_theme(self, dark):
-        # Cambiar gtk-theme-name en caliente no repinta una ventana ya
-        # presentada en Cinnamon/Mint (solo surte efecto antes del primer
-        # present()), así que si la app ya está en marcha se reinicia el
-        # proceso tras persistir la preferencia y el borrador en curso.
-        Gtk.Settings.get_default().set_property("gtk-theme-name", theme_variant(self.system_theme, dark))
+        """Guarda el tema (True oscuro, False claro, None el del sistema) y reinicia: cambiar gtk-theme-name con la
+        ventana ya presentada no repinta en Cinnamon/Mint, así que el tema se aplica al arrancar."""
         config = self.read_config()
         config["dark_mode"] = dark
-        if self.presented:
-            config["_pending_session"] = self.collect_session_state()
-            write_config(config)
-            # Instalado, el lanzador hace "exec -a telegraph-writer python3 ...",
-            # así que sys.executable apunta al propio script /usr/bin/telegraph-writer;
-            # reejecutarlo le pasaría la ruta del .py como argumento y
-            # Gtk.Application.run() saldría con "can not open files". Se usa el
-            # intérprete real y se conserva argv[0] para el icono del dock.
-            os.execve("/proc/self/exe", [sys.orig_argv[0], os.path.abspath(__file__)], os.environ)
         write_config(config)
-        self.statusbar.set_text(_("Tema oscuro aplicado") if dark else _("Tema claro aplicado"))
+        self.restart()
 
     def about(self):
         about = Gtk.AboutDialog(
-            transient_for=self.window, modal=True, program_name=APP_NAME, version=APP_VERSION,
-            authors=[AUTHOR], copyright=f"© 2026 {AUTHOR}",
+            transient_for=self.window, modal=True, program_name=APP_NAME, version=__version__,
+            authors=[f"{AUTHOR} <{AUTHOR_EMAIL}>"], copyright=f"© 2026 {AUTHOR}",
             comments=_("Cliente de escritorio para Telegra.ph: editor Markdown para crear, publicar y actualizar artículos."),
-            website=REPO_URL, website_label="github.com/seguidodoblado/telegraph-writer",
-            license_type=Gtk.License.CUSTOM, wrap_license=True, license=_(
-                "Este programa es software libre: se distribuye bajo la GNU General Public License, versión 3. "
-                "El texto completo está en el archivo LICENSE del repositorio y en https://www.gnu.org/licenses/gpl-3.0.html."
-            ))
-        # Instalado, el icono está en el tema (hicolor); desde el código fuente
-        # se carga el SVG del repositorio.
+            website=REPO_URL, website_label=REPO_URL.removeprefix("https://"),
+            license_type=Gtk.License.GPL_3_0, translator_credits=_("translator-credits"))
+        # Instalado, el icono está en el tema (hicolor); desde el código fuente se carga el SVG del repositorio.
         if Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).has_icon("telegraph-writer"):
             about.set_logo_icon_name("telegraph-writer")
-        else:
-            about.set_logo(Gdk.Texture.new_from_filename(str(Path(__file__).resolve().parent / "telegraph-writer.svg")))
+        elif LOGO.exists():
+            about.set_logo(Gdk.Texture.new_from_filename(str(LOGO)))
         about.add_credit_section(_("Servicios de terceros"), [
             "Telegra.ph https://telegra.ph/",
             _("Catbox (subida de imágenes) https://catbox.moe/")])
         about.present()
-
-
-if __name__ == "__main__":
-    install_i18n()
-    sys.exit(TelegraphWriter().run(sys.argv))

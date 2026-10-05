@@ -5,11 +5,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: telegraph-writer 2.6.0\n"
+"Project-Id-Version: telegraph-writer 2.7.0\n"
 "Report-Msgid-Bugs-To: jose.antonio.seguido@gmail.com\n"
-"POT-Creation-Date: 2026-10-02 00:32+0200\n"
+"POT-Creation-Date: 2026-10-05 10:55+0200\n"
 "PO-Revision-Date: 2026-10-02 00:32+0200\n"
-"Last-Translator: Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>\n"
+"Last-Translator: Jose Antonio Seguido Doblado <jose.antonio.seguido@gmail."
+"com>\n"
 "Language-Team: none\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -17,158 +18,109 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:87
+#: src/telegraph_writer/telegraph.py:23
 msgid "Error desconocido de Telegra.ph"
 msgstr "Unknown Telegra.ph error"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:120
+#: src/telegraph_writer/telegraph.py:44
 msgid "Solo se admiten imágenes JPG, JPEG, PNG o GIF."
 msgstr "Only JPG, JPEG, PNG or GIF images are supported."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:122
+#: src/telegraph_writer/telegraph.py:46
 msgid "La imagen supera el límite de 200 MB."
 msgstr "The image is over the 200 MB limit."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:137
+#: src/telegraph_writer/telegraph.py:61
 msgid "respuesta vacía"
 msgstr "empty response"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:138
+#: src/telegraph_writer/telegraph.py:62
 #, python-brace-format
 msgid "Catbox rechazó la imagen: {body}"
 msgstr "Catbox rejected the image: {body}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:406
+#: src/telegraph_writer/ui/gui.py:62
 #, python-brace-format
 msgid "{count} artículo"
 msgid_plural "{count} artículos"
 msgstr[0] "{count} article"
 msgstr[1] "{count} articles"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:431
-msgid "Negrita (**texto**)"
-msgstr "Bold (**text**)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:432
-msgid "Cursiva (*texto*)"
-msgstr "Italics (*text*)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:433
-msgid "Tachado (~~texto~~)"
-msgstr "Strikethrough (~~text~~)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:434
-msgid "Subrayado (__texto__)"
-msgstr "Underline (__text__)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:435
-msgid "Título: alterna H1 (#), H2 (##) y texto normal"
-msgstr "Heading: cycles H1 (#), H2 (##) and normal text"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:436
-msgid "Lista con viñetas"
-msgstr "Bulleted list"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:437
-msgid "Lista numerada"
-msgstr "Numbered list"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:438
-msgid "Cita (> texto)"
-msgstr "Quote (> text)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:439
-msgid "Código (`texto`)"
-msgstr "Code (`text`)"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:440
-msgid "Enlace ([texto](url))"
-msgstr "Link ([text](url))"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:579
-msgid "texto del enlace"
-msgstr "link text"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:655
+#: src/telegraph_writer/ui/gui.py:133
 msgid "Hay cambios sin guardar."
 msgstr "There are unsaved changes."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:656
+#: src/telegraph_writer/ui/gui.py:134
 msgid "Si continúas se perderán el título y el texto actuales."
 msgstr "If you continue, the current title and text will be lost."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:657
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1036
+#: src/telegraph_writer/ui/gui.py:135 src/telegraph_writer/ui/gui.py:515
 msgid "Cancelar"
 msgstr "Cancel"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:657
+#: src/telegraph_writer/ui/gui.py:135
 msgid "Descartar cambios"
 msgstr "Discard changes"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:730
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:731
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1201
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1204
+#: src/telegraph_writer/ui/gui.py:204 src/telegraph_writer/ui/gui.py:205
+#: src/telegraph_writer/ui/gui.py:688 src/telegraph_writer/ui/gui.py:691
 msgid "Sin configurar"
 msgstr "Not configured"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:733
+#: src/telegraph_writer/ui/gui.py:207
 msgid "Sin configurar · abre Ajustes para introducir el access token"
 msgstr "Not configured · open Settings to enter the access token"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:738
+#: src/telegraph_writer/ui/gui.py:212
 #, python-brace-format
 msgid "{count} artículo cargado"
 msgid_plural "{count} artículos cargados"
 msgstr[0] "{count} article loaded"
 msgstr[1] "{count} articles loaded"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:741
+#: src/telegraph_writer/ui/gui.py:215
 msgid "Conectado"
 msgstr "Connected"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:746
+#: src/telegraph_writer/ui/gui.py:220
 msgid "Sin conexión"
 msgstr "Not connected"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:747
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1055
+#: src/telegraph_writer/ui/gui.py:221 src/telegraph_writer/ui/gui.py:534
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "Error: {error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:752
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:754
+#: src/telegraph_writer/ui/gui.py:226 src/telegraph_writer/ui/gui.py:228
 msgid "Cuenta de Telegra.ph"
 msgstr "Telegra.ph account"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:765
+#: src/telegraph_writer/ui/gui.py:239
 #, python-brace-format
 msgid "Error al cargar el artículo: {error}"
 msgstr "Error loading the article: {error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:776
+#: src/telegraph_writer/ui/gui.py:250
 msgid "Artículo cargado"
 msgstr "Article loaded"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:785
+#: src/telegraph_writer/ui/gui.py:259
 msgid "Vista previa abierta en el navegador"
 msgstr "Preview opened in the browser"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:863
+#: src/telegraph_writer/ui/gui.py:337
 msgid "Aplica los cambios al artículo publicado"
 msgstr "Applies the changes to the published article"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:863
+#: src/telegraph_writer/ui/gui.py:337
 msgid "Publica primero el artículo para poder actualizarlo"
 msgstr "Publish the article first to be able to update it"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:875
+#: src/telegraph_writer/ui/gui.py:349
 msgid "Nuevo artículo"
 msgstr "New article"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:881
+#: src/telegraph_writer/ui/gui.py:355
 msgid ""
 "Este artículo ya existe en Telegra.ph.\n"
 "\n"
@@ -178,25 +130,24 @@ msgstr ""
 "\n"
 "Use \"Update\" to apply the changes without creating a duplicate."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:885
+#: src/telegraph_writer/ui/gui.py:359
 msgid "Escribe un título antes de publicar."
 msgstr "Write a title before publishing."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:889
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:915
+#: src/telegraph_writer/ui/gui.py:363 src/telegraph_writer/ui/gui.py:389
 msgid "Configura el access token desde Ajustes"
 msgstr "Set up the access token from Settings"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:894
+#: src/telegraph_writer/ui/gui.py:368
 #, python-brace-format
 msgid "Error al publicar: {error}"
 msgstr "Error publishing: {error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:902
+#: src/telegraph_writer/ui/gui.py:376
 msgid "Artículo publicado correctamente"
 msgstr "Article published successfully"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:907
+#: src/telegraph_writer/ui/gui.py:381
 msgid ""
 "Este artículo todavía no está publicado.\n"
 "\n"
@@ -206,36 +157,36 @@ msgstr ""
 "\n"
 "Use \"Publish\" to create the article on Telegra.ph."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:911
+#: src/telegraph_writer/ui/gui.py:385
 msgid "Escribe un título antes de actualizar."
 msgstr "Write a title before updating."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:920
+#: src/telegraph_writer/ui/gui.py:394
 #, python-brace-format
 msgid "Error al actualizar: {error}"
 msgstr "Error updating: {error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:926
+#: src/telegraph_writer/ui/gui.py:400
 msgid "Artículo actualizado correctamente"
 msgstr "Article updated successfully"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:931
+#: src/telegraph_writer/ui/gui.py:405
 msgid "El artículo todavía no tiene una URL pública"
 msgstr "The article doesn't have a public URL yet"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:936
+#: src/telegraph_writer/ui/gui.py:410
 msgid "Seleccionar imagen"
 msgstr "Select image"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:945
+#: src/telegraph_writer/ui/gui.py:419
 msgid "Subiendo imagen…"
 msgstr "Uploading image…"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:950
+#: src/telegraph_writer/ui/gui.py:424
 msgid "Imagen subida correctamente"
 msgstr "Image uploaded successfully"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:952
+#: src/telegraph_writer/ui/gui.py:426
 #, python-brace-format
 msgid ""
 "No se pudo subir la imagen.\n"
@@ -246,15 +197,15 @@ msgstr ""
 "\n"
 "{error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:953
+#: src/telegraph_writer/ui/gui.py:427
 msgid "Error al insertar imagen"
 msgstr "Error inserting image"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:954
+#: src/telegraph_writer/ui/gui.py:428
 msgid "Error al subir la imagen"
 msgstr "Error uploading the image"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:963
+#: src/telegraph_writer/ui/gui.py:437
 #, python-brace-format
 msgid ""
 "No se pudo crear la carpeta de borradores.\n"
@@ -269,11 +220,11 @@ msgstr ""
 "\n"
 "Choose another one in Settings → Choose…"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:966
+#: src/telegraph_writer/ui/gui.py:440
 msgid "Guardar Markdown"
 msgstr "Save Markdown"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:985
+#: src/telegraph_writer/ui/gui.py:459
 #, python-brace-format
 msgid ""
 "No se pudo guardar el borrador.\n"
@@ -284,16 +235,16 @@ msgstr ""
 "\n"
 "{error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:988
+#: src/telegraph_writer/ui/gui.py:462
 #, python-brace-format
 msgid "Guardado: {name}"
 msgstr "Saved: {name}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:992
+#: src/telegraph_writer/ui/gui.py:466
 msgid "Abrir Markdown"
 msgstr "Open Markdown"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1009
+#: src/telegraph_writer/ui/gui.py:483
 #, python-brace-format
 msgid ""
 "No se pudo abrir el borrador.\n"
@@ -304,153 +255,150 @@ msgstr ""
 "\n"
 "{error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1020
+#: src/telegraph_writer/ui/gui.py:494
 #, python-brace-format
 msgid "Abierto: {name}"
 msgstr "Opened: {name}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1024
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1167
+#: src/telegraph_writer/ui/gui.py:498 src/telegraph_writer/ui/gui.py:654
 msgid "Ajustes"
 msgstr "Settings"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1028
+#: src/telegraph_writer/ui/gui.py:502
 msgid "Access token de Telegra.ph"
 msgstr "Telegra.ph access token"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1031
+#: src/telegraph_writer/ui/gui.py:505
 msgid "Borradores:"
 msgstr "Drafts:"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1032
+#: src/telegraph_writer/ui/gui.py:506
 msgid "Elegir…"
 msgstr "Choose…"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1036
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1119
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1165
+#: src/telegraph_writer/ui/gui.py:508 src/telegraph_writer/ui/gui.py:613
+msgid "Sistema"
+msgstr "System"
+
+#: src/telegraph_writer/ui/gui.py:510
+msgid "Idioma:"
+msgstr "Language:"
+
+#: src/telegraph_writer/ui/gui.py:511
+msgid "Se aplica reiniciando la aplicación."
+msgstr "Applied by restarting the application."
+
+#: src/telegraph_writer/ui/gui.py:515 src/telegraph_writer/ui/gui.py:605
+#: src/telegraph_writer/ui/gui.py:652
 msgid "Guardar"
 msgstr "Save"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1037
+#: src/telegraph_writer/ui/gui.py:516
 msgid "Comprobar conexión"
 msgstr "Check connection"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1042
+#: src/telegraph_writer/ui/gui.py:521
 msgid "Elegir carpeta de borradores"
 msgstr "Choose drafts folder"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1049
+#: src/telegraph_writer/ui/gui.py:528
 msgid "Introduce un access token."
 msgstr "Enter an access token."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1053
+#: src/telegraph_writer/ui/gui.py:532
 #, python-brace-format
 msgid "Conectado: {name} · {count}"
 msgstr "Connected: {name} · {count}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1065
+#: src/telegraph_writer/ui/gui.py:547
 #, python-brace-format
 msgid "No se pudo guardar la configuración: {error}"
 msgstr "Couldn't save the configuration: {error}"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1116
+#: src/telegraph_writer/ui/gui.py:602
 msgid "Archivo"
 msgstr "File"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1117
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1163
+#: src/telegraph_writer/ui/gui.py:603 src/telegraph_writer/ui/gui.py:650
 msgid "Nuevo"
 msgstr "New"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1118
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1164
+#: src/telegraph_writer/ui/gui.py:604 src/telegraph_writer/ui/gui.py:651
 msgid "Abrir"
 msgstr "Open"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1122
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1248
+#: src/telegraph_writer/ui/gui.py:608 src/telegraph_writer/ui/gui.py:735
 msgid "Publicar"
 msgstr "Publish"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1123
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1251
+#: src/telegraph_writer/ui/gui.py:609 src/telegraph_writer/ui/gui.py:738
 msgid "Actualizar"
 msgstr "Update"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1124
+#: src/telegraph_writer/ui/gui.py:610
 msgid "Abrir artículo en navegador"
 msgstr "Open article in browser"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1126
+#: src/telegraph_writer/ui/gui.py:612
 msgid "Tema"
 msgstr "Theme"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1127
+#: src/telegraph_writer/ui/gui.py:614
 msgid "Claro"
 msgstr "Light"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1128
+#: src/telegraph_writer/ui/gui.py:615
 msgid "Oscuro"
 msgstr "Dark"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1130
+#: src/telegraph_writer/ui/gui.py:617
 msgid "Ayuda"
 msgstr "Help"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1131
+#: src/telegraph_writer/ui/gui.py:618
 msgid "Acerca de"
 msgstr "About"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1166
+#: src/telegraph_writer/ui/gui.py:653
 msgid "Insertar imagen"
 msgstr "Insert image"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1185
+#: src/telegraph_writer/ui/gui.py:672
 msgid "MIS ARTÍCULOS"
 msgstr "MY ARTICLES"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1186
+#: src/telegraph_writer/ui/gui.py:673
 msgid "Buscar artículos…"
 msgstr "Search articles…"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1220
+#: src/telegraph_writer/ui/gui.py:707
 msgid "(sin título)"
 msgstr "(untitled)"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1222
+#: src/telegraph_writer/ui/gui.py:709
 #, python-brace-format
 msgid "{views} vista"
 msgid_plural "{views} vistas"
 msgstr[0] "{views} view"
 msgstr[1] "{views} views"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1229
+#: src/telegraph_writer/ui/gui.py:716
 msgid "Título del artículo"
 msgstr "Article title"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1241
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1245
+#: src/telegraph_writer/ui/gui.py:728 src/telegraph_writer/ui/gui.py:732
 msgid "Vista previa"
 msgstr "Preview"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1242
+#: src/telegraph_writer/ui/gui.py:729
 msgid "Muestra u oculta la vista previa junto al editor"
 msgstr "Shows or hides the preview next to the editor"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1246
+#: src/telegraph_writer/ui/gui.py:733
 msgid "Abre la vista previa en el navegador"
 msgstr "Opens the preview in the browser"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1277
-msgid "Tema oscuro aplicado"
-msgstr "Dark theme applied"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1277
-msgid "Tema claro aplicado"
-msgstr "Light theme applied"
-
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1283
+#: src/telegraph_writer/ui/gui.py:769
 msgid ""
 "Cliente de escritorio para Telegra.ph: editor Markdown para crear, publicar "
 "y actualizar artículos."
@@ -458,20 +406,58 @@ msgstr ""
 "Desktop client for Telegra.ph: a Markdown editor to create, publish and "
 "update articles."
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1286
-msgid ""
-"Este programa es software libre: se distribuye bajo la GNU General Public "
-"License, versión 3. El texto completo está en el archivo LICENSE del "
-"repositorio y en https://www.gnu.org/licenses/gpl-3.0.html."
-msgstr ""
-"This program is free software: it is distributed under the GNU General "
-"Public License, version 3. The full text is in the LICENSE file in the "
-"repository and at https://www.gnu.org/licenses/gpl-3.0.html."
+#: src/telegraph_writer/ui/gui.py:771
+msgid "translator-credits"
+msgstr "José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1295
+#: src/telegraph_writer/ui/gui.py:777
 msgid "Servicios de terceros"
 msgstr "Third-party services"
 
-#: /media/seguidodoblado/Proyectos/Desarrollo/telegraph-writer/telegraph_writer.py:1297
+#: src/telegraph_writer/ui/gui.py:779
 msgid "Catbox (subida de imágenes) https://catbox.moe/"
 msgstr "Catbox (image hosting) https://catbox.moe/"
+
+#: src/telegraph_writer/ui/toolbar.py:26
+msgid "Negrita (**texto**)"
+msgstr "Bold (**text**)"
+
+#: src/telegraph_writer/ui/toolbar.py:27
+msgid "Cursiva (*texto*)"
+msgstr "Italics (*text*)"
+
+#: src/telegraph_writer/ui/toolbar.py:28
+msgid "Tachado (~~texto~~)"
+msgstr "Strikethrough (~~text~~)"
+
+#: src/telegraph_writer/ui/toolbar.py:29
+msgid "Subrayado (__texto__)"
+msgstr "Underline (__text__)"
+
+#: src/telegraph_writer/ui/toolbar.py:30
+msgid "Título: alterna H1 (#), H2 (##) y texto normal"
+msgstr "Heading: cycles H1 (#), H2 (##) and normal text"
+
+#: src/telegraph_writer/ui/toolbar.py:31
+msgid "Lista con viñetas"
+msgstr "Bulleted list"
+
+#: src/telegraph_writer/ui/toolbar.py:32
+msgid "Lista numerada"
+msgstr "Numbered list"
+
+#: src/telegraph_writer/ui/toolbar.py:33
+msgid "Cita (> texto)"
+msgstr "Quote (> text)"
+
+#: src/telegraph_writer/ui/toolbar.py:34
+msgid "Código (`texto`)"
+msgstr "Code (`text`)"
+
+#: src/telegraph_writer/ui/toolbar.py:35
+msgid "Enlace ([texto](url))"
+msgstr "Link ([text](url))"
+
+#: src/telegraph_writer/ui/toolbar.py:174
+msgid "texto del enlace"
+msgstr "link text"

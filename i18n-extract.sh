@@ -1,8 +1,7 @@
 #!/bin/sh
-# Regenera po/telegraph-writer.pot a partir de telegraph_writer.py (strings
-# envueltos en _() o ngettext()) y actualiza las traducciones existentes
-# (po/*.po) con las cadenas nuevas. Ejecutar a mano cada vez que se añade o
-# cambia un texto de la interfaz. Portado de Bloguero (i18n-extract.sh).
+# Regenera po/telegraph-writer.pot a partir del código fuente (textos envueltos en _() o ngettext())
+# y actualiza las traducciones existentes (po/*.po) con las cadenas nuevas.
+# Ejecutar a mano cada vez que se añade o cambia un texto de la interfaz.
 set -eu
 base=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 domain=telegraph-writer
@@ -10,17 +9,20 @@ domain=telegraph-writer
 command -v xgettext >/dev/null 2>&1 || { echo "Falta xgettext (instala gettext)." >&2; exit 1; }
 command -v msgmerge >/dev/null 2>&1 || { echo "Falta msgmerge (instala gettext)." >&2; exit 1; }
 
-version=$(sed -n '1s/^[^ ]* (\([^)-]*\).*/\1/p' "$base/debian/changelog")
-
+cd "$base"
+find src -name "*.py" | sort > "$base/.i18n-files"
 xgettext \
     --language=Python \
-    --keyword=_ --keyword=ngettext:1,2 \
+    --keyword=_ \
+    --keyword=ngettext:1,2 \
     --from-code=UTF-8 \
+    --add-comments=TRANSLATORS \
     --package-name="$domain" \
-    --package-version="$version" \
+    --package-version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' "$base/pyproject.toml")" \
     --msgid-bugs-address=jose.antonio.seguido@gmail.com \
     --output="$base/po/$domain.pot" \
-    "$base/telegraph_writer.py"
+    --files-from="$base/.i18n-files"
+rm -f "$base/.i18n-files"
 echo "Plantilla actualizada: po/$domain.pot"
 
 for po in "$base"/po/*.po; do
