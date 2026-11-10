@@ -1,5 +1,3 @@
-<p align="right"><a href="README.en.md">🇺🇸 English</a></p>
-
 <p align="center">
   <img src="telegraph-writer.svg" alt="Logotipo de Telegraph Writer" width="128">
 </p>
@@ -20,6 +18,8 @@
   <a href="https://codetime.dev"><img alt="CodeTime Badge" src="https://shields.jannchie.com/endpoint?style=flat&color=0284c7&url=https%3A%2F%2Fcodetime.dev%2Fv3%2Fusers%2Fshield%3Fuid%3D36830"></a>
   <a href="https://wakatime.com/badge/github/seguidodoblado/telegraph-writer"><img src="https://wakatime.com/badge/github/seguidodoblado/telegraph-writer.svg" alt="wakatime"></a>
 </p>
+
+## 🇪🇸 Español
 
 <p align="center">
   Escribe artículos en Markdown y publícalos en Telegra.ph, con vista previa fiel al resultado final.
@@ -64,3 +64,51 @@ Telegraph Writer no tiene servidor ni cuenta propios y no recoge datos. Solo se 
 ## Licencia
 
 Este proyecto se distribuye bajo la GNU General Public License, versión 3 o posterior (ver `COPYING`).
+
+---
+
+## 🇺🇸 English
+
+<p align="center">
+  Write articles in Markdown and publish them to Telegra.ph, with a preview faithful to the final result.
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Telegraph Writer screenshot">
+</p>
+
+Desktop application (GTK 4 + PyGObject, interface in Spanish and English), for personal use: no server of its own and
+no account beyond your own Telegra.ph access token.
+
+- **Write in Markdown** (headings, bold, italics, strikethrough, underline, links, images, lists, quotes, code)
+  with a formatting toolbar, instead of Telegra.ph's own web editor.
+- **Faithful preview**, in a panel next to the editor that updates while you type, exactly as it will be
+  published (needs `gir1.2-webkit-6.0`; without it, it opens in the browser instead).
+- **Publish and update** articles on your Telegra.ph account, with protection against accidentally creating a
+  duplicate.
+- **Save drafts** locally as Markdown files, in addition to Telegra.ph.
+- **Upload images** to [Catbox](https://catbox.moe/) and insert them into the article automatically, since
+  Telegra.ph has new uploads disabled.
+- **Light and dark mode**, with the matching system icons in each.
+- **Available in Spanish and English**, following the system's language (or `$LANGUAGE`).
+
+## Documentation
+
+Full documentation — installation, usage guide, technical specifications, troubleshooting and more — is in the
+**[project wiki](https://github.com/seguidodoblado/telegraph-writer/wiki)** (Spanish and English).
+
+## Third-party services
+
+Telegraph Writer publishes to your own [Telegra.ph](https://telegra.ph/) account through its public API, using
+the access token you generate yourself; the app doesn't host the articles.
+
+Images you insert are uploaded to [Catbox](https://catbox.moe/), an external hosting service; they're outside the
+app's control and subject to Catbox's own terms of use.
+
+## Privacy
+
+Telegraph Writer has no server or account of its own and collects no data. It only talks to Telegra.ph (to publish and list your articles) and to Catbox (to host the images you upload). What is stored and where is in the **[privacy policy](PRIVACY.md#-english)**.
+
+## License
+
+This project is distributed under the GNU General Public License, version 3 or later (see `COPYING`).
