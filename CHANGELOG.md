@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Cambiado
+
+- **Documentos en doble idioma:** `CONTRIBUTING`, `PRIVACY`, `README`, `SECURITY` y `SUPPORT` pasan a ser un único fichero con español e inglés (como `CODE_OF_CONDUCT.md`) y desaparecen sus versiones `.en.md`. En el README, el logotipo y los badges van una sola vez.
+
 ## [2.7.1] - 2026-10-05
 
 ### Añadido
