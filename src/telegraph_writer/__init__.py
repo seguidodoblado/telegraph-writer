@@ -1,7 +1,7 @@
 """Telegraph Writer: cliente de escritorio GTK 4 para Telegra.ph."""
 import os as _os
 
-__version__ = "2.7.1"
+__version__ = "2.7.2"
 
 
 def _fix_input_method() -> None:

@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
+## [2.7.2] - 2026-11-25
+
 ### Corregido
 
 - **Tildes flotantes en los campos de texto** (IBus 1.5.29 + GTK4, [#3](https://github.com/seguidodoblado/telegraph-writer/issues/3)): si la sesión usa `GTK_IM_MODULE=ibus`, la aplicación usa el método de entrada integrado de GTK (`simple`), que confirma bien las teclas muertas. Dentro de la aplicación se pierden los motores de IBus que componen caracteres (japonés, chino, coreano…)
+- Se declara `gi.require_version("Gdk", "4.0")` antes de importar Gdk, lo que elimina el `PyGIWarning` al arrancar
 
 ### Cambiado
 

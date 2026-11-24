@@ -1,3 +1,11 @@
+telegraph-writer (2.7.2-1) noble; urgency=medium
+
+  * Fix floating accents in text fields with IBus + GTK4
+    (GTK_IM_MODULE=ibus is switched to simple); declare the Gdk 4.0
+    version before importing it.
+
+ -- José Antonio Seguido Doblado <jose.antonio.seguido@gmail.com>  Wed, 25 Nov 2026 00:28:00 +0100
+
 telegraph-writer (2.7.1-1) noble; urgency=medium
 
   * Packaging: move the code to src/telegraph_writer with ui/, add
