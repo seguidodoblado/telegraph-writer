@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Cambiado
+- El logotipo (`telegraph-writer.svg`) pasa de la raíz del repositorio a `src/telegraph_writer/assets/`, como en Bloguero y GnoMilestone: cambian las rutas del README, de `build-deb.sh` y de `pyproject.toml` (`package-data`). El «Acerca de» lo encuentra también al ejecutar desde el código fuente sin depender de la raíz.
+
 ## [2.7.1] - 2026-10-05
 
 ### Añadido

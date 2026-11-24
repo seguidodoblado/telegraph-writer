@@ -1,7 +1,7 @@
 <p align="right"><a href="README.en.md">🇺🇸 English</a></p>
 
 <p align="center">
-  <img src="telegraph-writer.svg" alt="Logotipo de Telegraph Writer" width="128">
+  <img src="src/telegraph_writer/assets/telegraph-writer.svg" alt="Logotipo de Telegraph Writer" width="128">
 </p>
 
 <h1 align="center">Telegraph Writer</h1>

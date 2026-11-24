@@ -1,7 +1,7 @@
 <p align="right"><a href="README.md">🇪🇸 Español</a></p>
 
 <p align="center">
-  <img src="telegraph-writer.svg" alt="Telegraph Writer logo" width="128">
+  <img src="src/telegraph_writer/assets/telegraph-writer.svg" alt="Telegraph Writer logo" width="128">
 </p>
 
 <h1 align="center">Telegraph Writer</h1>

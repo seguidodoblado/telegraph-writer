@@ -21,7 +21,7 @@ cp -a "$base/src/telegraph_writer" "$stage/usr/share/telegraph-writer/"
 find "$stage/usr/share/telegraph-writer" -type d -name __pycache__ -prune -exec rm -rf {} +
 cp "$base/debian/telegraph-writer-launcher" "$stage/usr/bin/telegraph-writer"
 cp "$base/debian/telegraph-writer.desktop" "$stage/usr/share/applications/"
-cp "$base/telegraph-writer.svg" "$stage/usr/share/icons/hicolor/scalable/apps/"
+cp "$base/src/telegraph_writer/assets/telegraph-writer.svg" "$stage/usr/share/icons/hicolor/scalable/apps/"
 cp "$base/debian/copyright" "$doc/copyright"
 gzip -9n -c "$base/debian/changelog" > "$doc/changelog.Debian.gz"
 # Páginas de manual (inglés en man1, español en es/man1); la versión se rellena aquí
