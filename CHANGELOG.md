@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Corregido
+
+- **Tildes flotantes en los campos de texto** (IBus 1.5.29 + GTK4, [#3](https://github.com/seguidodoblado/telegraph-writer/issues/3)): si la sesión usa `GTK_IM_MODULE=ibus`, la aplicación usa el método de entrada integrado de GTK (`simple`), que confirma bien las teclas muertas. Dentro de la aplicación se pierden los motores de IBus que componen caracteres (japonés, chino, coreano…)
+
 ### Cambiado
 
 - **Documentos en doble idioma:** `CONTRIBUTING`, `PRIVACY`, `README`, `SECURITY` y `SUPPORT` pasan a ser un único fichero con español e inglés (como `CODE_OF_CONDUCT.md`) y desaparecen sus versiones `.en.md`. En el README, el logotipo y los badges van una sola vez.
